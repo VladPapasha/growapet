@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Zoo Kombat</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg1:#0f1020;--bg2:#1c1240;--card:#ffffff10;--card2:#ffffff1a;--text:#fff;--muted:#a9a6c9;
+  --gold:#ffc83d;--accent:#7c5cff;
+  --common:#9aa3b5;--rare:#3fa9ff;--epic:#b65cff;--legendary:#ffb020;--mythic:#ff3d81;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg1));color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+header{padding:14px 16px 8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{background:var(--card);border:1px solid #ffffff14;border-radius:14px;padding:8px 12px;font-size:13px;color:var(--muted)}
+.pill b{color:var(--text);font-size:15px;display:block}
+.balance{display:flex;align-items:center;justify-content:center;gap:10px;font-size:38px;font-weight:800;margin:14px 0 4px}
+.coin{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2b0,var(--gold) 45%,#c98a00);display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#7a4b00;font-weight:900;box-shadow:0 0 18px #ffc83d66}
+.coin.sm{width:18px;height:18px;font-size:10px;box-shadow:none;vertical-align:-3px}
+main{flex:1;overflow-y:auto;padding:0 16px 16px}
+.screen{display:none}.screen.active{display:block}
+/* tap */
+.tapwrap{display:flex;flex-direction:column;align-items:center;margin-top:10px}
+.tapbtn{position:relative;width:min(72vw,300px);height:min(72vw,300px);border-radius:50%;border:none;cursor:pointer;
+  background:radial-gradient(circle at 50% 35%,#3b2c8f,#1a1450 70%);box-shadow:0 0 0 10px #ffffff0a,0 0 60px #7c5cff55,inset 0 -10px 30px #0006;
+  display:flex;align-items:center;justify-content:center;font-size:min(36vw,150px);transition:transform .06s;touch-action:manipulation}
+.tapbtn:active{transform:scale(.96)}
+.tapbtn .ring{position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--rc,#7c5cff);opacity:.7}
+.mainname{margin-top:12px;font-weight:700;font-size:16px}
+.float{position:fixed;pointer-events:none;font-weight:900;font-size:26px;color:#fff;text-shadow:0 2px 6px #000a;animation:fl .9s ease-out forwards;z-index:50}
+@keyframes fl{to{transform:translateY(-90px);opacity:0}}
+.energy{width:100%;margin-top:18px}
+.ebar{height:12px;border-radius:8px;background:#ffffff14;overflow:hidden}
+.efill{height:100%;background:linear-gradient(90deg,#ffdd55,#ff9f1c);width:100%;transition:width .2s}
+.erow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+/* cards */
+h2{font-size:20px;margin:6px 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pet{position:relative;background:var(--card);border:2px solid var(--rc);border-radius:16px;padding:10px 6px 8px;text-align:center;cursor:pointer}
+.pet.locked{filter:grayscale(1) brightness(.45);border-color:#ffffff14;cursor:default}
+.pet .em{font-size:40px;line-height:1.1}
+.pet .nm{font-size:12px;font-weight:700;margin-top:4px}
+.pet .inc{font-size:11px;color:var(--muted)}
+.pet .cnt{position:absolute;top:4px;right:6px;font-size:11px;background:#0008;border-radius:8px;padding:1px 6px}
+.pet.sel{box-shadow:0 0 0 3px #fff inset}
+.tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--rc)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid #ffffff12;border-radius:16px;padding:12px;margin-bottom:10px}
+.row .ic{font-size:34px;width:46px;text-align:center}
+.row .info{flex:1}.row .info b{display:block}.row .info span{font-size:12px;color:var(--muted)}
+.btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px;color:#fff;background:var(--accent);cursor:pointer;white-space:nowrap}
+.btn:disabled{background:#ffffff1c;color:#ffffff66;cursor:default}
+.btn.gold{background:linear-gradient(180deg,#ffd451,#f0a500);color:#4a2c00}
+.btn.wide{width:100%;padding:14px;font-size:16px}
+.odds{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.odds span{font-size:11px;padding:2px 7px;border-radius:8px;background:#0005;color:var(--rc);font-weight:700}
+/* nav */
+nav{display:flex;gap:6px;padding:8px 10px calc(10px + env(safe-area-inset-bottom));background:#0b0a18cc;backdrop-filter:blur(10px);border-top:1px solid #ffffff10}
+nav button{flex:1;background:none;border:none;color:var(--muted);font-size:11px;padding:6px 0;border-radius:12px;cursor:pointer}
+nav button .i{font-size:22px;display:block}
+nav button.on{background:var(--card2);color:#fff}
+/* modal */
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.show{display:flex}
+.mbox{background:linear-gradient(180deg,#231a55,#141030);border:1px solid #ffffff20;border-radius:22px;padding:22px;text-align:center;width:100%;max-width:340px}
+.reveal{font-size:96px;margin:6px 0;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1)}}
+.shake{animation:sh .12s infinite}
+@keyframes sh{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
+.glow{filter:drop-shadow(0 0 22px var(--rc))}
+/* upgrader */
+.upg{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.slot{flex:1;aspect-ratio:1;border-radius:18px;background:var(--card);border:2px dashed #ffffff30;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;padding:6px}
+.slot .em{font-size:48px}
+.dial{position:relative;width:110px;height:110px;flex:none}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dial .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px}
+.needle{position:absolute;left:50%;top:50%;width:4px;height:52px;margin-left:-2px;background:#fff;border-radius:2px;transform-origin:50% 0;box-shadow:0 0 8px #fff}
+.tiers{display:flex;gap:6px;margin:10px 0 14px}
+.tiers button{flex:1;padding:8px 2px;border-radius:10px;border:2px solid var(--rc);background:#0004;color:var(--rc);font-weight:800;font-size:11px;cursor:pointer}
+.tiers button.on{background:var(--rc);color:#120d2b}
+.tiers button:disabled{opacity:.25;cursor:default}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000d;padding:10px 16px;border-radius:12px;font-size:14px;z-index:200;display:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="top">
+      <div class="pill">Доход в минуту<b id="ppm">0</b></div>
+      <div class="pill" style="text-align:center">Сила тапа<b id="tpw">1</b></div>
+      <div class="pill" style="text-align:right">Коллекция<b id="col">0/0</b></div>
+    </div>
+    <div class="balance"><span class="coin">Z</span><span id="bal">0</span></div>
+  </header>
+
+  <main>
+    <!-- TAP -->
+    <section class="screen active" id="s-tap">
+      <div class="tapwrap">
+        <button class="tapbtn" id="tapbtn"><span class="ring"></span><span id="mainEm">🐾</span></button>
+        <div class="mainname" id="mainName"></div>
+        <div class="energy">
+          <div class="erow"><span>⚡ Энергия</span><span id="etxt">0/0</span></div>
+          <div class="ebar"><div class="efill" id="efill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLLECTION -->
+    <section class="screen" id="s-col">
+      <h2>Коллекция</h2>
+      <p class="sub">Каждый зверь сам приносит монеты в минуту. Дубликаты из яиц дают +50% к доходу. Нажми на зверя, чтобы прокачать его или сделать главным.</p>
+      <div class="grid" id="colGrid"></div>
+    </section>
+
+    <!-- EGGS -->
+    <section class="screen" id="s-eggs">
+      <h2>Яйца</h2>
+      <p class="sub">Покупай яйца за монеты и выбивай редких зверей.</p>
+      <div id="eggList"></div>
+    </section>
+
+    <!-- UPGRADER -->
+    <section class="screen" id="s-upg">
+      <h2>Апгрейдер</h2>
+      <p class="sub">Поставь зверя и попробуй превратить его в более редкого. Не повезёт — зверь сгорит.</p>
+      <div class="upg">
+        <div class="slot" id="upFrom">Выбери зверя ниже</div>
+        <div class="dial">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#ffffff18" stroke-width="10"/>
+            <circle id="arc" cx="50" cy="50" r="42" fill="none" stroke="#3ddc84" stroke-width="10" stroke-dasharray="0 264" stroke-linecap="round"/></svg>
+          <div class="needle" id="needle"></div>
+          <div class="pct" id="pct">0%</div>
+        </div>
+        <div class="slot" id="upTo">Выбери редкость</div>
+      </div>
+      <div class="tiers" id="tiers"></div>
+      <button class="btn wide gold" id="spin" disabled>Апгрейд!</button>
+      <p class="sub" style="margin-top:16px">Твои звери:</p>
+      <div class="grid" id="upGrid"></div>
+    </section>
+
+    <!-- BOOSTS -->
+    <section class="screen" id="s-boost">
+      <h2>Бусты</h2>
+      <p class="sub">Прокачка тапа и энергии.</p>
+      <div id="boostList"></div>
+      <p class="sub" style="margin-top:18px">Пока тебя нет, звери зарабатывают до 3 часов.</p>
+      <button class="btn" id="reset" style="background:#ff3d5a33;color:#ff8da0">Сбросить прогресс</button>
+    </section>
+  </main>
+
+  <nav>
+    <button data-s="tap" class="on"><span class="i">👆</span>Тап</button>
+    <button data-s="col"><span class="i">🐾</span>Звери</button>
+    <button data-s="eggs"><span class="i">🥚</span>Яйца</button>
+    <button data-s="upg"><span class="i">🎰</span>Апгрейд</button>
+    <button data-s="boost"><span class="i">🚀</span>Бусты</button>
+  </nav>
+</div>
+
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- ДАННЫЕ ИГРЫ (меняй тут) ----------
+const RARITY = [
+  {id:'common',    name:'Обычный',     color:'var(--common)',    income:5},
+  {id:'rare',      name:'Редкий',      color:'var(--rare)',      income:25},
+  {id:'epic',      name:'Эпический',   color:'var(--epic)',      income:120},
+  {id:'legendary', name:'Легендарный', color:'var(--legendary)', income:600},
+  {id:'mythic',    name:'Мифический',  color:'var(--mythic)',    income:3000},
+];
+const PETS = [
+  {id:'cat',     em:'🐱', name:'Котёнок',   r:0},
+  {id:'dog',     em:'🐶', name:'Щенок',     r:0},
+  {id:'hamster', em:'🐹', name:'Хомяк',     r:0},
+  {id:'rabbit',  em:'🐰', name:'Кролик',    r:0},
+  {id:'mouse',   em:'🐭', name:'Мышонок',   r:0},
+  {id:'chick',   em:'🐥', name:'Цыплёнок',  r:0},
+  {id:'fox',     em:'🦊', name:'Лиса',      r:1},
+  {id:'raccoon', em:'🦝', name:'Енот',      r:1},
+  {id:'panda',   em:'🐼', name:'Панда',     r:1},
+  {id:'koala',   em:'🐨', name:'Коала',     r:1},
+  {id:'penguin', em:'🐧', name:'Пингвин',   r:1},
+  {id:'tiger',   em:'🐯', name:'Тигр',      r:2},
+  {id:'lion',    em:'🦁', name:'Лев',       r:2},
+  {id:'wolf',    em:'🐺', name:'Волк',      r:2},
+  {id:'owl',     em:'🦉', name:'Сова',      r:2},
+  {id:'unicorn', em:'🦄', name:'Единорог',  r:3},
+  {id:'dragon',  em:'🐉', name:'Дракон',    r:3},
+  {id:'eagle',   em:'🦅', name:'Огненный орёл', r:3},
+  {id:'spacecat',em:'🐈‍⬛', name:'Космокот',  r:4},
+  {id:'golddog', em:'🐕', name:'Золотой пёс', r:4},
+];
+const EGGS = [
+  {id:'basic',  em:'🥚', name:'Обычное яйцо',     price:500,    odds:[75,22,3,0,0]},
+  {id:'gold',   em:'🪺', name:'Золотое яйцо',     price:5000,   odds:[40,40,17,3,0]},
+  {id:'cosmic', em:'🌌', name:'Космическое яйцо', price:60000,  odds:[0,40,40,17,3]},
+];
+const UPG_CHANCE = [0,45,15,5,1]; // шанс апгрейда на +1, +2, +3, +4 редкости
+const BOOSTS = [
+  {id:'tap',   em:'👆', name:'Сила тапа',      desc:l=>`+1 монета за тап (сейчас ${1+l})`,           base:100, mult:2},
+  {id:'energy',em:'🔋', name:'Запас энергии',  desc:l=>`+250 к максимуму (сейчас ${1000+250*l})`,   base:200, mult:2},
+  {id:'regen', em:'⚡', name:'Восстановление', desc:l=>`+1 энергии в секунду (сейчас ${3+l}/сек)`,  base:300, mult:2.2},
+];
+const OFFLINE_CAP_H = 3;
+
+// ---------- СОСТОЯНИЕ ----------
+const KEY='zookombat_v1';
+const fresh=()=>({coins:0,boost:{tap:0,energy:0,regen:0},pets:{cat:{n:1,lvl:0}},main:'cat',energy:1000,last:Date.now()});
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){S=fresh()}
+const save=()=>{S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+const tg=window.Telegram&&window.Telegram.WebApp;
+if(tg&&tg.initData!==undefined){try{tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor('#1c1240')}catch(e){}}
+const haptic=t=>{try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(t||'light')}catch(e){}};
+
+const $=id=>document.getElementById(id);
+const P=id=>PETS.find(p=>p.id===id);
+const fmt=n=>{n=Math.floor(n);if(n<1e4)return n.toLocaleString('ru-RU');const u=['K','M','B','T'];let i=-1;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(n<10?2:n<100?1:0)+u[i]};
+const tapPower=()=>1+S.boost.tap;
+const maxEnergy=()=>1000+250*S.boost.energy;
+const regen=()=>3+S.boost.regen;
+const petIncome=id=>{const o=S.pets[id];if(!o)return 0;return RARITY[P(id).r].income*(1+0.5*(o.n-1))*Math.pow(1.25,o.lvl)};
+const perMin=()=>Object.keys(S.pets).reduce((a,id)=>a+petIncome(id),0);
+const lvlCost=id=>Math.floor(RARITY[P(id).r].income*20*Math.pow(1.7,S.pets[id].lvl));
+const boostCost=b=>Math.floor(b.base*Math.pow(b.mult,S.boost[b.id]));
+const rc=r=>RARITY[r].color;
+
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',1800)}
+function modal(html){$('mbox').innerHTML=html;$('modal').classList.add('show')}
+function closeModal(){$('modal').classList.remove('show')}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.dataset.close!==undefined)closeModal()});
+
+// ---------- ОФЛАЙН-ДОХОД ----------
+(function(){
+  const sec=Math.min((Date.now()-S.last)/1000,OFFLINE_CAP_H*3600);
+  if(sec>60){
+    const earned=perMin()*sec/60;
+    S.coins+=earned;S.energy=Math.min(maxEnergy(),S.energy+regen()*sec);
+    if(earned>=1)setTimeout(()=>modal(`<div style="font-size:56px">🐾</div><h2>Пока тебя не было</h2><p class="sub">Твои звери заработали</p><div class="balance"><span class="coin">Z</span>${fmt(earned)}</div><button class="btn wide" data-close>Забрать</button>`),300);
+  }
+})();
+
+// ---------- ТАП ----------
+$('tapbtn').addEventListener('pointerdown',e=>{
+  if(S.energy<tapPower()){toast('Нет энергии — подожди или прокачай буст');return}
+  S.energy-=tapPower();S.coins+=tapPower();haptic();
+  const f=document.createElement('div');f.className='float';f.textContent='+'+tapPower();
+  f.style.left=(e.clientX-14)+'px';f.style.top=(e.clientY-30)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),900);
+  renderTop();
+});
+
+// ---------- НАВИГАЦИЯ ----------
+let cur='tap';
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('s-'+b.dataset.s).classList.add('active');
+  cur=b.dataset.s;render();
+});
+
+// ---------- РЕНДЕР ----------
+function renderTop(){
+  $('bal').textContent=fmt(S.coins);$('ppm').textContent='+'+fmt(perMin());$('tpw').textContent=tapPower();
+  $('col').textContent=Object.keys(S.pets).length+'/'+PETS.length;
+  $('etxt').textContent=Math.floor(S.energy)+'/'+maxEnergy();$('efill').style.width=(S.energy/maxEnergy()*100)+'%';
+  if(cur==='eggs'||cur==='boost'||cur==='col')refreshButtons();
+}
+function renderTap(){
+  const m=S.main&&S.pets[S.main]?P(S.main):null;
+  $('mainEm').textContent=m?m.em:'🐾';$('tapbtn').style.setProperty('--rc',m?rc(m.r):'#7c5cff');
+  $('mainName').innerHTML=m?`<span class="tag" style="--rc:${rc(m.r)}">${RARITY[m.r].name}</span> ${m.name}`:'Купи яйцо, чтобы получить зверя';
+}
+function petCard(p,extra=''){
+  const o=S.pets[p.id];
+  if(!o)return `<div class="pet locked" style="--rc:${rc(p.r)}"><div class="em">❔</div><div class="nm">???</div><div class="inc"><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span></div></div>`;
+  return `<div class="pet ${extra}" data-id="${p.id}" style="--rc:${rc(p.r)}">${o.n>1?`<span class="cnt">x${o.n}</span>`:''}<div class="em">${p.em}</div><div class="nm">${p.name}</div><div class="inc">+${fmt(petIncome(p.id))}/мин · ур.${o.lvl}</div></div>`;
+}
+function renderCol(){
+  $('colGrid').innerHTML=PETS.slice().sort((a,b)=>b.r-a.r).map(p=>petCard(p)).join('');
+  $('colGrid').querySelectorAll('.pet[data-id]').forEach(el=>el.onclick=()=>openPet(el.dataset.id));
+}
+function openPet(id){
+  const p=P(id),o=S.pets[id],c=lvlCost(id),next=RARITY[p.r].income*(1+0.5*(o.n-1))*Math.pow(1.25,o.lvl+1);
+  modal(`<div class="reveal glow" style="--rc:${rc(p.r)}">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span><h2>${p.name}</h2>
+  <p class="sub">Уровень ${o.lvl} · копий: ${o.n}<br>Доход: <b>${fmt(petIncome(id))}</b> → <b style="color:#3ddc84">${fmt(next)}</b> в минуту</p>
+  <button class="btn wide gold" id="lvlBtn" ${S.coins<c?'disabled':''}>Прокачать за ${fmt(c)} <span class="coin sm">Z</span></button>
+  <div style="height:8px"></div>
+  <button class="btn wide" id="mainBtn" ${S.main===id?'disabled':''}>${S.main===id?'Уже главный':'Сделать главным'}</button>
+  <div style="height:8px"></div><button class="btn wide" style="background:#ffffff14" data-close>Закрыть</button>`);
+  $('lvlBtn').onclick=()=>{if(S.coins<c)return;S.coins-=c;o.lvl++;haptic('medium');save();render();openPet(id)};
+  $('mainBtn').onclick=()=>{S.main=id;save();render();closeModal();toast(p.name+' теперь главный')};
+}
+function renderEggs(){
+  $('eggList').innerHTML=EGGS.map(e=>`<div class="row"><div class="ic">${e.em}</div><div class="info"><b>${e.name}</b>
+    <div class="odds">${e.odds.map((o,i)=>o?`<span style="--rc:${rc(i)}">${RARITY[i].name} ${o}%</span>`:'').join('')}</div></div>
+    <button class="btn gold" data-egg="${e.id}">${fmt(e.price)}</button></div>`).join('');
+  $('eggList').querySelectorAll('[data-egg]').forEach(b=>b.onclick=()=>openEgg(b.dataset.egg));
+  refreshButtons();
+}
+function rollRarity(odds){let x=Math.random()*100;for(let i=0;i<odds.length;i++){if(x<odds[i])return i;x-=odds[i]}return 0}
+function randomPetOf(r){const l=PETS.filter(p=>p.r===r);return l[Math.floor(Math.random()*l.length)]}
+function addPet(id){if(S.pets[id])S.pets[id].n++;else S.pets[id]={n:1,lvl:0};if(!S.main||!S.pets[S.main])S.main=id}
+function openEgg(eid){
+  const e=EGGS.find(x=>x.id===eid);if(S.coins<e.price){toast('Не хватает монет');return}
+  S.coins-=e.price;const p=randomPetOf(rollRarity(e.odds));const isNew=!S.pets[p.id];addPet(p.id);save();render();
+  modal(`<div class="reveal shake" style="font-size:96px">${e.em}</div><p class="sub">Открываем...</p>`);haptic('heavy');
+  setTimeout(()=>{
+    modal(`<div class="reveal glow" style="--rc:${rc(p.r)}">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>
+    <h2>${p.name}</h2><p class="sub">${isNew?'🎉 Новый зверь в коллекции!':'Дубликат: +50% к доходу этого зверя'}<br>Теперь приносит ${fmt(petIncome(p.id))} в минуту</p>
+    <button class="btn wide gold" id="again">Ещё одно за ${fmt(e.price)}</button><div style="height:8px"></div><button class="btn wide" data-close>Круто!</button>`);
+    if(p.r>=3)haptic('heavy');
+    $('again').disabled=S.coins<e.price;$('again').onclick=()=>openEgg(eid);
+  },1100);
+}
+function renderBoost(){
+  $('boostList').innerHTML=BOOSTS.map(b=>`<div class="row"><div class="ic">${b.em}</div><div class="info"><b>${b.name} · ур.${S.boost[b.id]}</b><span>${b.desc(S.boost[b.id])}</span></div>
+    <button class="btn gold" data-b="${b.id}">${fmt(boostCost(b))}</button></div>`).join('');
+  $('boostList').querySelectorAll('[data-b]').forEach(el=>el.onclick=()=>{
+    const b=BOOSTS.find(x=>x.id===el.dataset.b),c=boostCost(b);if(S.coins<c)return;
+    S.coins-=c;S.boost[b.id]++;haptic('medium');save();render();
+  });
+  refreshButtons();
+}
+function refreshButtons(){
+  document.querySelectorAll('[data-egg]').forEach(b=>b.disabled=S.coins<EGGS.find(e=>e.id===b.dataset.egg).price);
+  document.querySelectorAll('[data-b]').forEach(b=>b.disabled=S.coins<boostCost(BOOSTS.find(x=>x.id===b.dataset.b)));
+}
+
+// ---------- АПГРЕЙДЕР ----------
+let U={pet:null,tier:null,spinning:false};
+function renderUpg(){
+  if(U.pet&&!S.pets[U.pet])U.pet=null;
+  const p=U.pet?P(U.pet):null;
+  $('upFrom').innerHTML=p?`<div class="em">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>${p.name}`:'Выбери зверя ниже';
+  $('upFrom').style.borderColor=p?rc(p.r):'';
+  $('tiers').innerHTML=RARITY.map((r,i)=>`<button style="--rc:${r.color}" data-t="${i}" class="${U.tier===i?'on':''}" ${!p||i<=p.r?'disabled':''}>${r.name}</button>`).join('');
+  $('tiers').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(U.spinning)return;U.tier=+b.dataset.t;renderUpg()});
+  if(p&&U.tier!==null&&U.tier<=p.r)U.tier=null;
+  const ch=p&&U.tier!==null?UPG_CHANCE[U.tier-p.r]:0;
+  $('upTo').innerHTML=U.tier!==null?`<div class="em">❔</div><span class="tag" style="--rc:${rc(U.tier)}">${RARITY[U.tier].name}</span>случайный зверь`:'Выбери редкость';
+  $('upTo').style.borderColor=U.tier!==null?rc(U.tier):'';
+  $('pct').textContent=ch+'%';$('arc').setAttribute('stroke-dasharray',(ch/100*264)+' 264');
+  $('spin').disabled=!ch||U.spinning;
+  const owned=PETS.filter(x=>S.pets[x.id]&&x.r<4).sort((a,b)=>b.r-a.r);
+  $('upGrid').innerHTML=owned.length?owned.map(x=>petCard(x,U.pet===x.id?'sel':'')).join(''):'<p class="sub">Нет зверей для апгрейда</p>';
+  $('upGrid').querySelectorAll('.pet[data-id]').forEach(el=>el.onclick=()=>{if(U.spinning)return;U.pet=el.dataset.id;U.tier=null;renderUpg()});
+}
+$('spin').onclick=()=>{
+  const p=P(U.pet);if(!p||U.tier===null||U.spinning)return;
+  const ch=UPG_CHANCE[U.tier-p.r],roll=Math.random()*100,win=roll<ch;
+  U.spinning=true;$('spin').disabled=true;haptic('medium');
+  // забираем ставку сразу
+  const o=S.pets[U.pet];o.n--;if(o.n<=0){delete S.pets[U.pet];if(S.main===U.pet)S.main=Object.keys(S.pets)[0]||null}
+  let prize=null;if(win){prize=randomPetOf(U.tier);addPet(prize.id)}
+  save();
+  const n=$('needle');n.style.transition='none';n.style.transform='rotate(180deg)';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transition='transform 2.4s cubic-bezier(.15,.8,.2,1)';n.style.transform=`rotate(${180+360*4+roll*3.6}deg)`}));
+  setTimeout(()=>{
+    U.spinning=false;haptic(win?'heavy':'light');
+    if(win)modal(`<div class="reveal glow" style="--rc:${rc(prize.r)}">${prize.em}</div><span class="tag" style="--rc:${rc(prize.r)}">${RARITY[prize.r].name}</span><h2>Апгрейд удался!</h2><p class="sub">${p.name} превратился в: ${prize.name}</p><button class="btn wide gold" data-close>Ура!</button>`);
+    else modal(`<div class="reveal" style="filter:grayscale(1)">${p.em}</div><h2>Не повезло</h2><p class="sub">${p.name} сгорел в апгрейдере. Выпало ${roll.toFixed(1)}, нужно было меньше ${ch}.</p><button class="btn wide" data-close>Эх</button>`);
+    if(!S.pets[U.pet]){U.pet=null;U.tier=null}
+    render();
+  },2600);
+};
+
+$('reset').onclick=()=>{
+  modal(`<h2>Сбросить всё?</h2><p class="sub">Монеты, звери и бусты пропадут.</p><button class="btn wide" style="background:#ff3d5a" id="doReset">Да, сбросить</button><div style="height:8px"></div><button class="btn wide" style="background:#ffffff14" data-close>Отмена</button>`);
+  $('doReset').onclick=()=>{S=fresh();save();closeModal();render()};
+};
+
+function render(){renderTop();renderTap();if(cur==='col')renderCol();if(cur==='eggs')renderEggs();if(cur==='upg')renderUpg();if(cur==='boost')renderBoost()}
+
+// ---------- ИГРОВОЙ ЦИКЛ ----------
+let lastT=performance.now(),saveT=0;
+setInterval(()=>{
+  const now=performance.now(),dt=Math.min((now-lastT)/1000,OFFLINE_CAP_H*3600);lastT=now;
+  S.coins+=perMin()*dt/60;S.energy=Math.min(maxEnergy(),S.energy+regen()*dt);
+  renderTop();saveT+=dt;if(saveT>5){saveT=0;save()}
+},250);
+window.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastT=performance.now()}});
+window.addEventListener('pagehide',save);
+render();
+</script>
+</body>
+</html>
