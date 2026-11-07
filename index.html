@@ -3,102 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Zoo Kombat</title>
+<title>Grow a Pet</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
-  --bg1:#0f1020;--bg2:#1c1240;--card:#ffffff10;--card2:#ffffff1a;--text:#fff;--muted:#a9a6c9;
-  --gold:#ffc83d;--accent:#7c5cff;
-  --common:#9aa3b5;--rare:#3fa9ff;--epic:#b65cff;--legendary:#ffb020;--mythic:#ff3d81;
-}
+:root{--bg1:#0f1020;--bg2:#1c1240;--card:#ffffff10;--card2:#ffffff1a;--text:#fff;--muted:#a9a6c9;--gold:#ffc83d;--accent:#7c5cff;--green:#3ddc84;--red:#ff4d6d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg1));color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
-#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column}
-header{padding:14px 16px 8px}
+#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative}
+header{padding:10px 16px 4px}
+.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.brand b{font-size:16px;letter-spacing:.3px}
+.gear{background:var(--card);border:1px solid #ffffff14;color:#fff;border-radius:12px;width:38px;height:38px;font-size:18px;cursor:pointer;transition:transform .3s}
+.gear:active{transform:rotate(90deg)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.pill{background:var(--card);border:1px solid #ffffff14;border-radius:14px;padding:8px 12px;font-size:13px;color:var(--muted)}
+.pill{flex:1;background:var(--card);border:1px solid #ffffff14;border-radius:14px;padding:7px 10px;font-size:12px;color:var(--muted)}
 .pill b{color:var(--text);font-size:15px;display:block}
-.balance{display:flex;align-items:center;justify-content:center;gap:10px;font-size:38px;font-weight:800;margin:14px 0 4px}
-.coin{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2b0,var(--gold) 45%,#c98a00);display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#7a4b00;font-weight:900;box-shadow:0 0 18px #ffc83d66}
-.coin.sm{width:18px;height:18px;font-size:10px;box-shadow:none;vertical-align:-3px}
-main{flex:1;overflow-y:auto;padding:0 16px 16px}
-.screen{display:none}.screen.active{display:block}
-/* tap */
-.tapwrap{display:flex;flex-direction:column;align-items:center;margin-top:10px}
-.tapbtn{position:relative;width:min(72vw,300px);height:min(72vw,300px);border-radius:50%;border:none;cursor:pointer;
+.balance{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;font-size:38px;font-weight:800;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+.coin{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2b0,var(--gold) 45%,#c98a00);display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#7a4b00;font-weight:900;box-shadow:0 0 18px #ffc83d66;flex:none}
+.coin.bump{animation:bump .25s}
+@keyframes bump{50%{transform:scale(1.2)}}
+.pinc{position:absolute;right:12%;top:0;font-size:14px;font-weight:800;color:var(--green);pointer-events:none;animation:pinc 1s ease-out forwards}
+@keyframes pinc{from{opacity:1;transform:translateY(6px)}to{opacity:0;transform:translateY(-16px)}}
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 16px 16px}
+.screen{display:none}.screen.active{display:block;animation:scr .3s ease-out}
+.noanim .screen.active{animation:none}
+@keyframes scr{from{opacity:0;transform:translateY(14px)}}
+
+/* петы */
+.pe{display:inline-block;line-height:1}
+.pe svg{width:1.4em;height:1.4em;display:block;overflow:visible;margin:-.12em}
+.pe.vg{filter:sepia(1) saturate(4.5) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 6px #ffcc33)}
+.pe.vr{animation:rbw 2.4s linear infinite}
+@keyframes rbw{from{filter:saturate(2.2) hue-rotate(0deg) drop-shadow(0 0 6px #ff4dff)}to{filter:saturate(2.2) hue-rotate(360deg) drop-shadow(0 0 6px #ff4dff)}}
+.noanim .pe.vr{animation:none;filter:saturate(2.2) hue-rotate(200deg) drop-shadow(0 0 6px #ff4dff)}
+.vtag{display:inline-block;font-size:9px;font-weight:900;text-transform:uppercase;padding:1px 6px;border-radius:6px;margin-left:3px;vertical-align:1px}
+.vtag.vg{background:linear-gradient(90deg,#ffe27a,#f0a500);color:#4a2c00}
+.vtag.vr{background:linear-gradient(90deg,#ff4d4d,#ffb84d,#fff94d,#4dff88,#4dc3ff,#b84dff);color:#1a0d33}
+
+/* тап */
+.tapwrap{display:flex;flex-direction:column;align-items:center;margin-top:8px}
+.tapbtn{position:relative;width:min(70vw,290px);height:min(70vw,290px);border-radius:50%;border:none;cursor:pointer;
   background:radial-gradient(circle at 50% 35%,#3b2c8f,#1a1450 70%);box-shadow:0 0 0 10px #ffffff0a,0 0 60px #7c5cff55,inset 0 -10px 30px #0006;
-  display:flex;align-items:center;justify-content:center;font-size:min(36vw,150px);transition:transform .06s;touch-action:manipulation}
-.tapbtn:active{transform:scale(.96)}
-.tapbtn .ring{position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--rc,#7c5cff);opacity:.7}
+  display:flex;align-items:center;justify-content:center;font-size:min(30vw,125px);touch-action:manipulation;transition:transform .12s ease-out}
+.tapbtn .ring{position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--rc,#7c5cff);opacity:.8;box-shadow:0 0 30px var(--rc,#7c5cff)}
+.tapbtn #mainEm{display:inline-block;animation:idle 3s ease-in-out infinite}
+.noanim .tapbtn #mainEm{animation:none}
+@keyframes idle{50%{transform:translateY(-6px) scale(1.02)}}
+.tapbtn #mainEm.squish{animation:squish .18s ease-out}
+@keyframes squish{40%{transform:scale(.86,.92)}}
+.wave{position:absolute;border-radius:50%;border:3px solid #fff8;pointer-events:none;animation:wave .5s ease-out forwards}
+@keyframes wave{from{width:0;height:0;opacity:1}to{width:160px;height:160px;opacity:0}}
 .mainname{margin-top:12px;font-weight:700;font-size:16px}
 .float{position:fixed;pointer-events:none;font-weight:900;font-size:26px;color:#fff;text-shadow:0 2px 6px #000a;animation:fl .9s ease-out forwards;z-index:50}
-@keyframes fl{to{transform:translateY(-90px);opacity:0}}
+@keyframes fl{to{transform:translateY(-90px) scale(1.2);opacity:0}}
+.pcoin{position:fixed;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2b0,var(--gold) 45%,#c98a00);pointer-events:none;z-index:60}
 .energy{width:100%;margin-top:18px}
 .ebar{height:12px;border-radius:8px;background:#ffffff14;overflow:hidden}
-.efill{height:100%;background:linear-gradient(90deg,#ffdd55,#ff9f1c);width:100%;transition:width .2s}
+.efill{height:100%;background:linear-gradient(90deg,#ffdd55,#ff9f1c);width:100%;transition:width .2s;box-shadow:0 0 10px #ff9f1c88}
 .erow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
-/* cards */
+
+/* карточки */
 h2{font-size:20px;margin:6px 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pet{position:relative;background:var(--card);border:2px solid var(--rc);border-radius:16px;padding:10px 6px 8px;text-align:center;cursor:pointer}
+h3{font-size:14px;margin:18px 0 8px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid.g4{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pet{position:relative;background:#ffffff0c;border:2px solid var(--rc);border-radius:16px;padding:10px 4px 8px;text-align:center;cursor:pointer;animation:popIn .35s backwards;animation-delay:var(--d,0s);transition:transform .12s}
+.pet:active{transform:scale(.95)}
+.pet.vg{border-color:#ffd24a;background:linear-gradient(180deg,#ffd24a26,#ffffff08)}
+.pet.vr{border-color:transparent;background:linear-gradient(#1b1442,#1b1442) padding-box,linear-gradient(120deg,#ff4d4d,#ffb84d,#fff94d,#4dff88,#4dc3ff,#b84dff,#ff4d4d) border-box;background-size:100% 100%,300% 300%;animation:popIn .35s backwards,rbb 3s linear infinite;animation-delay:var(--d,0s),0s}
+@keyframes rbb{to{background-position:0 0,300% 0}}
+.noanim .pet{animation:none!important}
+@keyframes popIn{from{opacity:0;transform:scale(.7)}}
 .pet.locked{filter:grayscale(1) brightness(.45);border-color:#ffffff14;cursor:default}
-.pet .em{font-size:40px;line-height:1.1}
-.pet .nm{font-size:12px;font-weight:700;margin-top:4px}
+.pet .em{font-size:36px;line-height:1;height:44px;display:flex;align-items:center;justify-content:center}
+.g4 .pet .em{font-size:28px;height:34px}
+.pet .nm{font-size:12px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g4 .pet .nm{font-size:11px}
 .pet .inc{font-size:11px;color:var(--muted)}
-.pet .cnt{position:absolute;top:4px;right:6px;font-size:11px;background:#0008;border-radius:8px;padding:1px 6px}
-.pet.sel{box-shadow:0 0 0 3px #fff inset}
+.pet .price{font-size:11px;color:var(--gold);font-weight:800}
+.pet .cnt{position:absolute;top:4px;right:6px;font-size:11px;background:#0008;border-radius:8px;padding:1px 6px;z-index:1}
+.pet.sel{box-shadow:0 0 0 3px #fff inset,0 0 18px var(--rc)}
+.pet.dim{opacity:.3}
 .tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--rc)}
 .row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid #ffffff12;border-radius:16px;padding:12px;margin-bottom:10px}
 .row .ic{font-size:34px;width:46px;text-align:center}
-.row .info{flex:1}.row .info b{display:block}.row .info span{font-size:12px;color:var(--muted)}
-.btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px;color:#fff;background:var(--accent);cursor:pointer;white-space:nowrap}
+.row .info{flex:1;min-width:0}.row .info b{display:block}.row .info span{font-size:12px;color:var(--muted)}
+.btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px;color:#fff;background:var(--accent);cursor:pointer;white-space:nowrap;transition:transform .1s,filter .2s}
+.btn:active:not(:disabled){transform:scale(.95)}
 .btn:disabled{background:#ffffff1c;color:#ffffff66;cursor:default}
 .btn.gold{background:linear-gradient(180deg,#ffd451,#f0a500);color:#4a2c00}
+.btn.green{background:linear-gradient(180deg,#4ff0a0,#1fb86a);color:#053a20}
+.btn.ghost{background:#ffffff14}
 .btn.wide{width:100%;padding:14px;font-size:16px}
+.btn.sm{padding:7px 10px;font-size:12px}
 .odds{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .odds span{font-size:11px;padding:2px 7px;border-radius:8px;background:#0005;color:var(--rc);font-weight:700}
-/* nav */
-nav{display:flex;gap:6px;padding:8px 10px calc(10px + env(safe-area-inset-bottom));background:#0b0a18cc;backdrop-filter:blur(10px);border-top:1px solid #ffffff10}
-nav button{flex:1;background:none;border:none;color:var(--muted);font-size:11px;padding:6px 0;border-radius:12px;cursor:pointer}
-nav button .i{font-size:22px;display:block}
+.prog{height:6px;border-radius:4px;background:#ffffff14;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#7c5cff,#3ddc84)}
+
+/* меню */
+nav{display:flex;gap:4px;padding:8px 6px calc(10px + env(safe-area-inset-bottom));background:#0b0a18cc;backdrop-filter:blur(10px);border-top:1px solid #ffffff10}
+nav button{position:relative;flex:1;background:none;border:none;color:var(--muted);font-size:10px;padding:6px 0;border-radius:12px;cursor:pointer;transition:background .2s,color .2s}
+nav button .i{font-size:21px;display:block;transition:transform .25s cubic-bezier(.3,1.8,.5,1)}
 nav button.on{background:var(--card2);color:#fff}
-/* modal */
-.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal.show{display:flex}
-.mbox{background:linear-gradient(180deg,#231a55,#141030);border:1px solid #ffffff20;border-radius:22px;padding:22px;text-align:center;width:100%;max-width:340px}
-.reveal{font-size:96px;margin:6px 0;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
-@keyframes pop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1)}}
-.shake{animation:sh .12s infinite}
-@keyframes sh{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
-.glow{filter:drop-shadow(0 0 22px var(--rc))}
-/* upgrader */
-.upg{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
-.slot{flex:1;aspect-ratio:1;border-radius:18px;background:var(--card);border:2px dashed #ffffff30;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;padding:6px}
-.slot .em{font-size:48px}
-.dial{position:relative;width:110px;height:110px;flex:none}
-.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
-.dial .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px}
-.needle{position:absolute;left:50%;top:50%;width:4px;height:52px;margin-left:-2px;background:#fff;border-radius:2px;transform-origin:50% 0;box-shadow:0 0 8px #fff}
-.tiers{display:flex;gap:6px;margin:10px 0 14px}
-.tiers button{flex:1;padding:8px 2px;border-radius:10px;border:2px solid var(--rc);background:#0004;color:var(--rc);font-weight:800;font-size:11px;cursor:pointer}
-.tiers button.on{background:var(--rc);color:#120d2b}
-.tiers button:disabled{opacity:.25;cursor:default}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000d;padding:10px 16px;border-radius:12px;font-size:14px;z-index:200;display:none}
+nav button.on .i{transform:translateY(-3px) scale(1.15)}
+nav button .dot{position:absolute;top:4px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);display:none}
+nav button .dot.show{display:block;animation:bump 1s infinite}
+
+/* модалки */
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(4px)}
+.modal.show{display:flex;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.mbox{position:relative;background:linear-gradient(180deg,#231a55,#141030);border:1px solid #ffffff20;border-radius:22px;padding:22px;text-align:center;width:100%;max-width:340px;animation:mIn .3s cubic-bezier(.2,1.4,.4,1);overflow:hidden;max-height:92vh;overflow-y:auto}
+@keyframes mIn{from{transform:scale(.8) translateY(20px);opacity:0}}
+.revealWrap{position:relative;height:150px;display:flex;align-items:center;justify-content:center}
+.rays{position:absolute;width:260px;height:260px;border-radius:50%;background:repeating-conic-gradient(from 0deg,var(--rc) 0 10deg,transparent 10deg 30deg);opacity:.35;animation:spin 6s linear infinite;-webkit-mask:radial-gradient(circle,#000 20%,transparent 70%);mask:radial-gradient(circle,#000 20%,transparent 70%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reveal{position:relative;font-size:96px;animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0) rotate(-40deg)}}
+.flash{position:fixed;inset:0;background:#fff;z-index:150;pointer-events:none;animation:flash .45s ease-out forwards}
+@keyframes flash{from{opacity:.9}to{opacity:0}}
+.egg{font-size:110px;display:inline-block;animation:eshake 1.3s ease-in forwards}
+@keyframes eshake{0%{transform:rotate(0)}10%{transform:rotate(-6deg)}20%{transform:rotate(6deg)}30%{transform:rotate(-9deg)}40%{transform:rotate(9deg)}
+  50%{transform:rotate(-13deg) scale(1.05)}60%{transform:rotate(13deg) scale(1.08)}70%{transform:rotate(-17deg) scale(1.1)}80%{transform:rotate(17deg) scale(1.14)}
+  90%{transform:rotate(-20deg) scale(1.2)}100%{transform:rotate(0) scale(1.35);opacity:.9}}
+.confetti{position:fixed;width:8px;height:12px;z-index:160;pointer-events:none;border-radius:2px}
+
+/* колесо */
+.wheelBox{position:relative;width:min(80vw,290px);aspect-ratio:1;margin:4px auto 12px}
+.wheelBox svg.wh{position:absolute;inset:0;width:100%;height:100%}
+.arc{transition:stroke-dasharray .6s cubic-bezier(.3,1.2,.5,1);filter:drop-shadow(0 0 6px #ffb020)}
+.wheelBox.win .arc{stroke:#3ddc84;filter:drop-shadow(0 0 12px #3ddc84);animation:pulse .5s 3}
+.wheelBox.lose{animation:dshake .45s}
+.wheelBox.lose .arc{opacity:.45}
+@keyframes pulse{50%{stroke-width:20}}
+@keyframes dshake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.pointer{position:absolute;inset:0;transform:rotate(180deg)}
+.pointer::before{content:"";position:absolute;left:50%;top:-2px;transform:translateX(-50%);border-left:11px solid transparent;border-right:11px solid transparent;border-top:22px solid #fff;filter:drop-shadow(0 0 8px #fff) drop-shadow(0 0 3px #ffc83d)}
+.pointer::after{content:"";position:absolute;left:50%;top:18px;width:3px;height:18px;margin-left:-1.5px;background:linear-gradient(#fff,transparent);border-radius:2px}
+.center{position:absolute;inset:23%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2e2370,#120d2e 75%);box-shadow:inset 0 0 0 2px #ffffff14,inset 0 -8px 20px #0008,0 0 30px #0008;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.center .cem{font-size:44px;line-height:1}
+.center .cpct{font-size:20px;font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
+.center .clbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.center .chev{font-size:40px;line-height:.8}
+.spinning .center .cem{animation:cbeat .4s ease-in-out infinite}
+@keyframes cbeat{50%{transform:scale(1.12)}}
+.duel{display:flex;align-items:stretch;gap:8px;margin-bottom:12px}
+.slot{flex:1;min-height:118px;border-radius:18px;background:var(--card);border:2px dashed #ffffff30;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;padding:8px 6px;transition:border-color .3s}
+.slot.filled{border-style:solid}
+.slot .em{font-size:40px;line-height:1}
+.slot .ems{font-size:22px;line-height:1.25;display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
+.slot .val{color:var(--gold);font-weight:900;font-size:14px;margin-top:4px}
+.slot .nm{color:#fff;font-weight:700;font-size:12px;margin-top:4px}
+.arrowMid{display:flex;align-items:center;font-size:22px;color:var(--gold)}
+.stakebar{display:flex;gap:6px;align-items:center;margin:4px 0 6px;flex-wrap:wrap}
+.stakebar input[type=range]{flex:1;accent-color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--rc);border-radius:20px;padding:3px 8px;font-size:15px;cursor:pointer}
+.chip small{font-size:12px}
+.hist{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--card);margin-bottom:6px;font-size:13px;border-left:4px solid var(--c)}
+.hist .pe{font-size:24px}
+.hist .r{margin-left:auto;font-weight:800;color:var(--c)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000d;padding:10px 16px;border-radius:12px;font-size:14px;z-index:200;display:none;animation:fade .2s;white-space:nowrap}
+
+/* ежедневка */
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px}
+.day{background:var(--card);border:2px solid #ffffff14;border-radius:12px;padding:6px 2px;text-align:center;font-size:10px;color:var(--muted)}
+.day b{display:block;font-size:18px;margin:2px 0}
+.day.got{border-color:var(--green);background:#3ddc8418;color:#fff}
+.day.now{border-color:var(--gold);background:#ffc83d22;color:#fff;animation:bump 1.2s infinite}
+/* настройки */
+.set{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #ffffff12;text-align:left}
+.sw{position:relative;width:48px;height:28px;border-radius:14px;background:#ffffff22;cursor:pointer;transition:background .2s;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.sw.on{background:var(--green)}.sw.on::after{transform:translateX(20px)}
+.set input[type=range]{width:130px;accent-color:var(--accent)}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
+    <div class="brand"><b>🐾 Grow a Pet</b><button class="gear" id="gear">⚙️</button></div>
     <div class="top">
-      <div class="pill">Доход в минуту<b id="ppm">0</b></div>
-      <div class="pill" style="text-align:center">Сила тапа<b id="tpw">1</b></div>
-      <div class="pill" style="text-align:right">Коллекция<b id="col">0/0</b></div>
+      <div class="pill">В секунду<b id="pps">0</b></div>
+      <div class="pill">За тап<b id="tpw">1</b></div>
+      <div class="pill">Коллекция<b id="col">0/0</b></div>
     </div>
-    <div class="balance"><span class="coin">Z</span><span id="bal">0</span></div>
+    <div class="balance" id="balance"><span class="coin" id="balCoin">Z</span><span id="bal">0</span></div>
   </header>
 
-  <main>
-    <!-- TAP -->
+  <main id="main">
     <section class="screen active" id="s-tap">
       <div class="tapwrap">
         <button class="tapbtn" id="tapbtn"><span class="ring"></span><span id="mainEm">🐾</span></button>
@@ -110,47 +204,68 @@ nav button.on{background:var(--card2);color:#fff}
       </div>
     </section>
 
-    <!-- COLLECTION -->
     <section class="screen" id="s-col">
       <h2>Коллекция</h2>
-      <p class="sub">Каждый зверь сам приносит монеты в минуту. Дубликаты из яиц дают +50% к доходу. Нажми на зверя, чтобы прокачать его или сделать главным.</p>
+      <p class="sub">Каждый зверь приносит монеты каждую секунду. <span class="vtag vg">Золотой</span> дороже и доходнее на 25%, <span class="vtag vr">Радужный</span> — на 50%.</p>
       <div class="grid" id="colGrid"></div>
     </section>
 
-    <!-- EGGS -->
     <section class="screen" id="s-eggs">
       <h2>Яйца</h2>
-      <p class="sub">Покупай яйца за монеты и выбивай редких зверей.</p>
+      <p class="sub">Из любого яйца может выпасть <span class="vtag vg">Золотой</span> (4%) или <span class="vtag vr">Радужный</span> (1%) зверь.</p>
       <div id="eggList"></div>
     </section>
 
-    <!-- UPGRADER -->
     <section class="screen" id="s-upg">
-      <h2>Апгрейдер</h2>
-      <p class="sub">Поставь зверя и попробуй превратить его в более редкого. Не повезёт — зверь сгорит.</p>
-      <div class="upg">
-        <div class="slot" id="upFrom">Выбери зверя ниже</div>
-        <div class="dial">
-          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#ffffff18" stroke-width="10"/>
-            <circle id="arc" cx="50" cy="50" r="42" fill="none" stroke="#3ddc84" stroke-width="10" stroke-dasharray="0 264" stroke-linecap="round"/></svg>
-          <div class="needle" id="needle"></div>
-          <div class="pct" id="pct">0%</div>
-        </div>
-        <div class="slot" id="upTo">Выбери редкость</div>
+      <div class="wheelBox" id="wheel">
+        <svg class="wh" viewBox="0 0 200 200">
+          <defs><radialGradient id="gBg"><stop offset=".6" stop-color="#1a1440"/><stop offset="1" stop-color="#0c0a1f"/></radialGradient></defs>
+          <circle cx="100" cy="100" r="99" fill="url(#gBg)"/>
+          <g id="ticks"></g>
+          <circle cx="100" cy="100" r="76" fill="none" stroke="#ffffff12" stroke-width="16"/>
+          <g transform="rotate(90 100 100)"><circle class="arc" id="arcA" cx="100" cy="100" r="76" fill="none" stroke="#ffb020" stroke-width="16" style="stroke-dasharray:0 478"/></g>
+          <g transform="translate(200 0) scale(-1 1) rotate(90 100 100)"><circle class="arc" id="arcB" cx="100" cy="100" r="76" fill="none" stroke="#ffb020" stroke-width="16" style="stroke-dasharray:0 478"/></g>
+          <circle cx="100" cy="100" r="66" fill="none" stroke="#ffffff10" stroke-width="1"/>
+        </svg>
+        <div class="pointer" id="pointer"></div>
+        <div class="center" id="center"></div>
       </div>
-      <div class="tiers" id="tiers"></div>
-      <button class="btn wide gold" id="spin" disabled>Апгрейд!</button>
-      <p class="sub" style="margin-top:16px">Твои звери:</p>
-      <div class="grid" id="upGrid"></div>
+      <div class="duel">
+        <div class="slot" id="upFrom"></div>
+        <div class="arrowMid">➜</div>
+        <div class="slot" id="upTo"></div>
+      </div>
+      <button class="btn wide gold" id="spin" disabled>⏫ Апгрейд</button>
+
+      <h3>💰 Монеты в ставку: <span id="stakeCoinsTxt" style="color:#fff">0</span></h3>
+      <div class="stakebar"><input type="range" id="stakeRange" min="0" max="0" value="0" step="1"></div>
+      <div class="stakebar">
+        <button class="btn sm ghost" data-q="0">0</button><button class="btn sm ghost" data-q="+1">+1</button><button class="btn sm ghost" data-q=".1">10%</button>
+        <button class="btn sm ghost" data-q=".25">25%</button><button class="btn sm ghost" data-q=".5">50%</button><button class="btn sm ghost" data-q="1">Всё</button>
+      </div>
+      <h3>🐾 Мои звери <span style="font-weight:400">— нажми, чтобы поставить</span></h3>
+      <div class="chips" id="chips"></div>
+      <div class="grid g4" id="upGrid"></div>
+      <h3>🎯 Апгрейд в <button class="btn sm ghost" id="sortBtn" style="margin-left:auto"></button></h3>
+      <div class="grid g4" id="tgtGrid"></div>
+      <h3>📜 Мои последние апгрейды</h3>
+      <div id="histList"></div>
     </section>
 
-    <!-- BOOSTS -->
+    <section class="screen" id="s-quest">
+      <h2>🎁 Ежедневная награда</h2>
+      <p class="sub">Заходи каждый день подряд — награда растёт. Пропустишь день — серия начнётся заново.</p>
+      <div class="days" id="days"></div>
+      <button class="btn wide gold" id="claimDaily"></button>
+      <h2 style="margin-top:22px">📋 Задания</h2>
+      <p class="sub">Выполняй и забирай награды.</p>
+      <div id="questList"></div>
+    </section>
+
     <section class="screen" id="s-boost">
       <h2>Бусты</h2>
-      <p class="sub">Прокачка тапа и энергии.</p>
+      <p class="sub">Прокачка тапа и энергии. Пока тебя нет, звери зарабатывают до 3 часов.</p>
       <div id="boostList"></div>
-      <p class="sub" style="margin-top:18px">Пока тебя нет, звери зарабатывают до 3 часов.</p>
-      <button class="btn" id="reset" style="background:#ff3d5a33;color:#ff8da0">Сбросить прогресс</button>
     </section>
   </main>
 
@@ -159,6 +274,7 @@ nav button.on{background:var(--card2);color:#fff}
     <button data-s="col"><span class="i">🐾</span>Звери</button>
     <button data-s="eggs"><span class="i">🥚</span>Яйца</button>
     <button data-s="upg"><span class="i">🎰</span>Апгрейд</button>
+    <button data-s="quest"><span class="i">🎁</span>Задания<span class="dot" id="questDot"></span></button>
     <button data-s="boost"><span class="i">🚀</span>Бусты</button>
   </nav>
 </div>
@@ -167,227 +283,595 @@ nav button.on{background:var(--card2);color:#fff}
 <div class="toast" id="toast"></div>
 
 <script>
-// ---------- ДАННЫЕ ИГРЫ (меняй тут) ----------
+// ================= РИСОВАННЫЕ ПОРОДЫ (SVG) =================
+const OL='stroke="#0005" stroke-width="1.5" stroke-linejoin="round"';
+function fluffRing(cx,cy,R,col,n=14,r=9){let s='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2;s+=`<circle cx="${(cx+R*Math.cos(a)).toFixed(1)}" cy="${(cy+R*Math.sin(a)).toFixed(1)}" r="${r}" fill="${col}"/>`}return s}
+function dots(list,col,r=3,ring){return list.map(([x,y])=>ring?`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${col}" stroke-width="2.2"/>`:`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`).join('')}
+function star(x,y,s,c='#fff'){return `<path d="M${x} ${y-s} L${x+s*.3} ${y-s*.3} L${x+s} ${y} L${x+s*.3} ${y+s*.3} L${x} ${y+s} L${x-s*.3} ${y+s*.3} L${x-s} ${y} L${x-s*.3} ${y-s*.3}Z" fill="${c}"/>`}
+function catArt(a){
+  const f=a.fur,f2=a.f2||'#0000',eye=a.eye||'#9be15d',earIn=a.earIn||'#f4a7b9';let s='';
+  if(a.ear==='fold'){
+    s+=`<path d="M20 42 Q20 22 40 28 Q35 38 20 42Z" fill="${f}" ${OL}/><path d="M80 42 Q80 22 60 28 Q65 38 80 42Z" fill="${f}" ${OL}/>`;
+  }else{
+    const big=a.ear==='big',ec=a.pat==='points'?f2:f;
+    const L=big?'12,50 14,2 46,30':'17,47 21,9 46,31',R=big?'88,50 86,2 54,30':'83,47 79,9 54,31';
+    const Li=big?'20,42 20,13 39,30':'23,41 25,18 40,32',Ri=big?'80,42 80,13 61,30':'77,41 75,18 60,32';
+    s+=`<polygon points="${L}" fill="${ec}" ${OL}/><polygon points="${R}" fill="${ec}" ${OL}/><polygon points="${Li}" fill="${earIn}"/><polygon points="${Ri}" fill="${earIn}"/>`;
+    if(a.tufts)s+=`<path d="M21 9 L18 -2 M21 9 L24 -1 M79 9 L82 -2 M79 9 L76 -1" stroke="${f2}" stroke-width="2.4" stroke-linecap="round"/>`;
+  }
+  if(a.fluff)s+=fluffRing(50,62,30,f,16,9);
+  const rx=a.chub?36:33,ry=a.chub?30:28;
+  s+=`<ellipse cx="50" cy="58" rx="${rx}" ry="${ry}" fill="${f}" ${OL}/>`;
+  if(a.fluff)s+=`<path d="M18 66 L12 70 L19 72 L14 78 L24 76 M82 66 L88 70 L81 72 L86 78 L76 76" fill="${f}" stroke="#0003" stroke-width="1"/>`;
+  if(a.pat==='tabby')s+=`<path d="M44 33 L46 41 M50 31 L50 41 M56 33 L54 41 M19 55 L28 57 M18 61 L27 61 M81 55 L72 57 M82 61 L73 61" stroke="${f2}" stroke-width="3" stroke-linecap="round"/>`;
+  if(a.pat==='calico')s+=`<path d="M22 52 Q24 34 44 32 Q46 46 34 52 Q28 57 22 52Z" fill="${f2}"/><path d="M60 72 Q72 62 81 64 Q80 78 66 82 Q60 78 60 72Z" fill="${a.f3}"/><path d="M58 32 Q70 31 76 40 Q66 44 58 40Z" fill="${a.f3}"/>`;
+  if(a.pat==='points')s+=`<ellipse cx="50" cy="65" rx="18" ry="15" fill="${f2}" opacity=".8"/>`;
+  if(a.pat==='tux')s+=`<path d="M50 50 Q38 58 34 72 Q40 85 50 86 Q60 85 66 72 Q62 58 50 50Z" fill="#fff"/>`;
+  if(a.pat==='spots')s+=dots([[30,46],[70,45],[24,62],[76,62],[41,37],[59,37],[34,78],[66,78],[50,34]],f2,3.2,a.ring);
+  if(a.pat==='stars')s+=star(30,44,4)+star(70,40,3)+star(26,68,3)+star(74,70,4)+star(50,35,2.5)+star(60,80,2);
+  if(a.wrinkle)s+=`<path d="M40 38 Q50 34 60 38 M42 43 Q50 40 58 43" stroke="${f2}" stroke-width="1.6" fill="none"/>`;
+  if(a.muz)s+=`<ellipse cx="50" cy="68" rx="14" ry="10" fill="${a.muz}"/>`;
+  const fl=a.flat;
+  for(const x of [38,62]){
+    s+=`<ellipse cx="${x}" cy="55" rx="6.5" ry="${fl?6.5:7}" fill="${eye}" stroke="#0006" stroke-width="1"/>`;
+    s+=fl?`<circle cx="${x}" cy="55.5" r="3.4" fill="#111"/>`:`<ellipse cx="${x}" cy="55.5" rx="2" ry="5.4" fill="#111"/>`;
+    s+=`<circle cx="${x+2}" cy="52.5" r="1.6" fill="#fff"/>`;
+  }
+  s+=`<ellipse cx="29" cy="66" rx="4.5" ry="2.6" fill="#ff7a9a" opacity=".35"/><ellipse cx="71" cy="66" rx="4.5" ry="2.6" fill="#ff7a9a" opacity=".35"/>`;
+  s+=`<path d="M46.5 63.5 L53.5 63.5 L50 67.5Z" fill="#f28da0" stroke="#0005" stroke-width=".8" stroke-linejoin="round"/><path d="M50 67.5 Q47 71.5 43.5 69.5 M50 67.5 Q53 71.5 56.5 69.5" stroke="#3a2a2a" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  if(!a.noWhisk)s+=`<path d="M36 66 L15 63 M36 69.5 L15 71 M64 66 L85 63 M64 69.5 L85 71" stroke="${a.whisk||'#00000070'}" stroke-width="1.2" stroke-linecap="round"/>`;
+  return s;
+}
+function dogArt(a){
+  const f=a.fur,muz=a.muz||f,earC=a.earC||f,eyeC=a.eye||'#1d1410';let s='';
+  const ny=a.snout==='long'?63:a.snout==='flat'||a.snout==='jowl'?60:61;
+  if(a.ear==='pt'||a.ear==='bigpt'){
+    const big=a.ear==='bigpt';
+    const L=big?'12,44 13,0 44,26':'19,40 23,6 46,26',R=big?'88,44 87,0 56,26':'81,40 77,6 54,26';
+    const Li=big?'19,37 19,11 38,27':'25,35 26,14 40,27',Ri=big?'81,37 81,11 62,27':'75,35 74,14 60,27';
+    s+=`<polygon points="${L}" fill="${earC}" ${OL}/><polygon points="${R}" fill="${earC}" ${OL}/><polygon points="${Li}" fill="${a.earIn||'#e9a0a0'}"/><polygon points="${Ri}" fill="${a.earIn||'#e9a0a0'}"/>`;
+  }
+  if(a.fluff)s+=fluffRing(50,58,30,f,16,10);
+  const hrx=a.snout==='jowl'?34:30;
+  s+=`<ellipse cx="50" cy="54" rx="${hrx}" ry="28" fill="${f}" ${OL}/>`;
+  if(a.pat==='mask')s+=`<path d="M50 34 Q34 38 28 58 Q34 82 50 82 Q66 82 72 58 Q66 38 50 34Z" fill="#fff"/><path d="M50 27 L45 40 L50 45 L55 40Z" fill="${f}"/><circle cx="39" cy="41" r="3" fill="#fff"/><circle cx="61" cy="41" r="3" fill="#fff"/>`;
+  if(a.pat==='blaze')s+=`<path d="M46 26 Q50 25 54 26 L58 54 L42 54Z" fill="#fff"/>`;
+  if(a.pat==='spots')s+=dots([[30,42],[68,38],[24,58],[76,56],[44,30],[60,30],[36,74],[66,74],[56,44]],'#1f1f1f',3.4);
+  if(a.pat==='tan')s+=`<circle cx="39" cy="41" r="3.2" fill="${a.tan}"/><circle cx="61" cy="41" r="3.2" fill="${a.tan}"/>`;
+  if(a.pat==='shiba')s+=`<ellipse cx="33" cy="63" rx="10" ry="9" fill="#fff4e2"/><ellipse cx="67" cy="63" rx="10" ry="9" fill="#fff4e2"/><circle cx="39" cy="41" r="2.8" fill="#fff4e2"/><circle cx="61" cy="41" r="2.8" fill="#fff4e2"/>`;
+  if(a.pat==='saddle')s+=`<path d="M28 40 Q50 22 72 40 Q62 34 50 34 Q38 34 28 40Z" fill="#2a1d14"/>`;
+  if(a.wrinkle)s+=`<path d="M41 36 Q50 32 59 36 M43 40.5 Q50 37.5 57 40.5" stroke="#0005" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  // морда
+  if(a.snout==='jowl')s+=`<ellipse cx="40" cy="68" rx="13" ry="10" fill="${muz}" ${OL}/><ellipse cx="60" cy="68" rx="13" ry="10" fill="${muz}" ${OL}/>`;
+  else if(a.snout==='flat')s+=`<ellipse cx="50" cy="65" rx="18" ry="11" fill="${muz}"/>`;
+  else if(a.snout==='long')s+=`<ellipse cx="50" cy="68" rx="12.5" ry="14" fill="${muz}"/>`;
+  else s+=`<ellipse cx="50" cy="66" rx="15" ry="11.5" fill="${muz}"/>`;
+  // висячие уши поверх
+  if(a.ear==='flop'||a.ear==='long'){const cy=a.ear==='long'?60:52,ry=a.ear==='long'?24:18;
+    s+=`<ellipse cx="21" cy="${cy}" rx="9.5" ry="${ry}" fill="${earC}" transform="rotate(16 21 ${cy})" ${OL}/><ellipse cx="79" cy="${cy}" rx="9.5" ry="${ry}" fill="${earC}" transform="rotate(-16 79 ${cy})" ${OL}/>`;
+    if(a.pat==='spots')s+=dots([[19,56],[81,52]],'#1f1f1f',2.6);}
+  if(a.ear==='small')s+=`<path d="M27 33 L17 25 Q23 18 37 27Z" fill="${earC}" ${OL}/><path d="M73 33 L83 25 Q77 18 63 27Z" fill="${earC}" ${OL}/>`;
+  if(a.ear==='puff')s+=`<circle cx="19" cy="58" r="13" fill="${earC}" ${OL}/><circle cx="81" cy="58" r="13" fill="${earC}" ${OL}/><circle cx="50" cy="27" r="13" fill="${f}" ${OL}/><circle cx="39" cy="30" r="9" fill="${f}"/><circle cx="61" cy="30" r="9" fill="${f}"/>`;
+  if(a.pat==='crown')s+=`<path d="M35 28 L38 13 L45 21 L50 8 L55 21 L62 13 L65 28Z" fill="#ffd84a" stroke="#b37a00" stroke-width="1.5" stroke-linejoin="round"/><circle cx="50" cy="22" r="2.6" fill="#ff3d81"/><circle cx="41" cy="24" r="1.8" fill="#3fa9ff"/><circle cx="59" cy="24" r="1.8" fill="#3fa9ff"/>`;
+  // глаза
+  const er=a.bigEye?5.8:4.7;
+  for(const x of [39,61]){
+    if(a.blue)s+=`<circle cx="${x}" cy="48" r="${er}" fill="#5cc8ff" stroke="#0006" stroke-width="1"/><circle cx="${x}" cy="48" r="${er*.48}" fill="#111"/>`;
+    else s+=`<circle cx="${x}" cy="48" r="${er}" fill="${eyeC}"/>`;
+    s+=`<circle cx="${x+1.6}" cy="46.3" r="1.6" fill="#fff"/>`;
+  }
+  if(a.pat==='tan')s+=`<ellipse cx="50" cy="${ny+6}" rx="11" ry="7" fill="${a.tan}"/>`;
+  if(a.blush)s+=`<ellipse cx="30" cy="60" rx="4.5" ry="2.6" fill="#ff7a9a" opacity=".4"/><ellipse cx="70" cy="60" rx="4.5" ry="2.6" fill="#ff7a9a" opacity=".4"/>`;
+  // нос, рот
+  s+=`<ellipse cx="50" cy="${ny}" rx="6.2" ry="4.6" fill="#1d1d1d"/><ellipse cx="48.4" cy="${ny-1.6}" rx="2.1" ry="1.1" fill="#fff9"/>`;
+  s+=`<path d="M50 ${ny+4} L50 ${ny+7} M50 ${ny+7} Q45.5 ${ny+11} 41.5 ${ny+8} M50 ${ny+7} Q54.5 ${ny+11} 58.5 ${ny+8}" stroke="#2a1a14" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  if(a.tongue)s+=`<path d="M46.5 ${ny+9.2} Q50 ${ny+19} 53.5 ${ny+9.2}Z" fill="#ff6f8a" stroke="#0004" stroke-width=".8"/>`;
+  if(a.teeth)s+=`<path d="M42.5 ${ny+9.5} L44.2 ${ny+5} L45.9 ${ny+9.5}Z M54.1 ${ny+9.5} L55.8 ${ny+5} L57.5 ${ny+9.5}Z" fill="#fff"/>`;
+  if(a.sparkle)s+=star(14,22,5,'#fff6c2')+star(88,30,4,'#fff6c2')+star(84,84,3,'#fff6c2');
+  return s;
+}
+const ART_CACHE={};
+function artSVG(p){if(!ART_CACHE[p.id])ART_CACHE[p.id]=`<svg viewBox="0 0 100 100">${p.art.t==='cat'?catArt(p.art):dogArt(p.art)}</svg>`;return ART_CACHE[p.id]}
+
+// ================= НАСТРОЙКИ ИГРЫ =================
+// inc — доход в секунду (целое число)
 const RARITY = [
-  {id:'common',    name:'Обычный',     color:'var(--common)',    income:5},
-  {id:'rare',      name:'Редкий',      color:'var(--rare)',      income:25},
-  {id:'epic',      name:'Эпический',   color:'var(--epic)',      income:120},
-  {id:'legendary', name:'Легендарный', color:'var(--legendary)', income:600},
-  {id:'mythic',    name:'Мифический',  color:'var(--mythic)',    income:3000},
+  {id:'common',    name:'Обычный',     color:'#9aa3b5', inc:1},
+  {id:'rare',      name:'Редкий',      color:'#3fa9ff', inc:5},
+  {id:'epic',      name:'Эпический',   color:'#b65cff', inc:25},
+  {id:'legendary', name:'Легендарный', color:'#ffb020', inc:120},
+  {id:'mythic',    name:'Мифический',  color:'#ff3d81', inc:600},
 ];
+// v — себестоимость обычной версии; fam — семейство для тематических яиц
 const PETS = [
-  {id:'cat',     em:'🐱', name:'Котёнок',   r:0},
-  {id:'dog',     em:'🐶', name:'Щенок',     r:0},
-  {id:'hamster', em:'🐹', name:'Хомяк',     r:0},
-  {id:'rabbit',  em:'🐰', name:'Кролик',    r:0},
-  {id:'mouse',   em:'🐭', name:'Мышонок',   r:0},
-  {id:'chick',   em:'🐥', name:'Цыплёнок',  r:0},
-  {id:'fox',     em:'🦊', name:'Лиса',      r:1},
-  {id:'raccoon', em:'🦝', name:'Енот',      r:1},
-  {id:'panda',   em:'🐼', name:'Панда',     r:1},
-  {id:'koala',   em:'🐨', name:'Коала',     r:1},
-  {id:'penguin', em:'🐧', name:'Пингвин',   r:1},
-  {id:'tiger',   em:'🐯', name:'Тигр',      r:2},
-  {id:'lion',    em:'🦁', name:'Лев',       r:2},
-  {id:'wolf',    em:'🐺', name:'Волк',      r:2},
-  {id:'owl',     em:'🦉', name:'Сова',      r:2},
-  {id:'unicorn', em:'🦄', name:'Единорог',  r:3},
-  {id:'dragon',  em:'🐉', name:'Дракон',    r:3},
-  {id:'eagle',   em:'🦅', name:'Огненный орёл', r:3},
-  {id:'spacecat',em:'🐈‍⬛', name:'Космокот',  r:4},
-  {id:'golddog', em:'🐕', name:'Золотой пёс', r:4},
+  // --- обычные ---
+  {id:'mouse',   em:'🐭', name:'Мышонок',   r:0, v:800},
+  {id:'chick',   em:'🐥', name:'Цыплёнок',  r:0, v:820},
+  {id:'frog',    em:'🐸', name:'Лягушонок', r:0, v:850},
+  {id:'hamster', em:'🐹', name:'Хомяк',     r:0, v:870},
+  {id:'rabbit',  em:'🐰', name:'Кролик',    r:0, v:900},
+  {id:'pig',     em:'🐷', name:'Поросёнок', r:0, v:920},
+  {id:'duck',    em:'🦆', name:'Утёнок',    r:0, v:950},
+  {id:'cat',     em:'🐱', name:'Котёнок',   r:0, v:960, fam:'cat'},
+  {id:'turtle',  em:'🐢', name:'Черепаха',  r:0, v:1000},
+  {id:'dog',     em:'🐶', name:'Щенок',     r:0, v:1000, fam:'dog'},
+  {id:'ginger',  name:'Рыжий кот',   r:0, v:1050, fam:'cat', art:{t:'cat',fur:'#f29a3c',f2:'#c4651a',eye:'#9be15d',pat:'tabby'}},
+  {id:'graycat', name:'Серый кот',   r:0, v:1080, fam:'cat', art:{t:'cat',fur:'#a3a9b3',f2:'#6c727c',eye:'#f5c542',pat:'tabby'}},
+  {id:'blackcat',name:'Чёрный кот',  r:0, v:1100, fam:'cat', art:{t:'cat',fur:'#2b2b33',eye:'#f5d442',earIn:'#5a4050',whisk:'#ffffff90'}},
+  {id:'mutt',    name:'Дворняжка',   r:0, v:1120, fam:'dog', art:{t:'dog',fur:'#b98a5a',muz:'#ead3b2',ear:'flop',earC:'#8a5f38',tongue:1}},
+  {id:'chihuahua',name:'Чихуахуа',   r:0, v:1200, fam:'dog', art:{t:'dog',fur:'#e9c79c',muz:'#f6e3c8',ear:'bigpt',bigEye:1,earIn:'#f2a3a3'}},
+  {id:'dachshund',name:'Такса',      r:0, v:1250, fam:'dog', art:{t:'dog',fur:'#8a4a24',muz:'#a35e33',ear:'long',earC:'#6b3618',snout:'long'}},
+  // --- редкие ---
+  {id:'penguin', em:'🐧', name:'Пингвин',   r:1, v:5600},
+  {id:'hedgehog',em:'🦔', name:'Ёжик',      r:1, v:5700},
+  {id:'raccoon', em:'🦝', name:'Енот',      r:1, v:5800},
+  {id:'koala',   em:'🐨', name:'Коала',     r:1, v:5900},
+  {id:'sloth',   em:'🦥', name:'Ленивец',   r:1, v:6000},
+  {id:'otter',   em:'🦦', name:'Выдра',     r:1, v:6100},
+  {id:'parrot',  em:'🦜', name:'Попугай',   r:1, v:6200},
+  {id:'fox',     em:'🦊', name:'Лиса',      r:1, v:6300},
+  {id:'british', name:'Британец',    r:1, v:6400, fam:'cat', art:{t:'cat',fur:'#8c9bb0',eye:'#f0a13c',chub:1,flat:1}},
+  {id:'panda',   em:'🐼', name:'Панда',     r:1, v:6500},
+  {id:'siamese', name:'Сиамский кот',r:1, v:6600, fam:'cat', art:{t:'cat',fur:'#f3e3c8',f2:'#5a4033',eye:'#4fa8ff',pat:'points',earIn:'#8a6a5a'}},
+  {id:'fold',    name:'Вислоухий кот',r:1, v:6700, fam:'cat', art:{t:'cat',fur:'#c9c9cf',f2:'#8d8d95',eye:'#f2b84b',ear:'fold',pat:'tabby',chub:1}},
+  {id:'beagle',  name:'Бигль',       r:1, v:6750, fam:'dog', art:{t:'dog',fur:'#c77a3a',muz:'#fff',ear:'flop',earC:'#6b3a1a',pat:'blaze'}},
+  {id:'calico',  name:'Трёхцветная кошка',r:1, v:6800, fam:'cat', art:{t:'cat',fur:'#fff6ea',f2:'#f29a3c',f3:'#2b2b33',eye:'#9be15d',pat:'calico'}},
+  {id:'pug',     name:'Мопс',        r:1, v:6900, fam:'dog', art:{t:'dog',fur:'#e6c79a',muz:'#3a2c24',ear:'small',earC:'#3a2c24',snout:'flat',wrinkle:1,tongue:1,bigEye:1}},
+  {id:'corgi',   name:'Корги',       r:1, v:7000, fam:'dog', art:{t:'dog',fur:'#e48a3a',muz:'#fff',ear:'bigpt',pat:'blaze',tongue:1,blush:1}},
+  {id:'poodle',  name:'Пудель',      r:1, v:7100, fam:'dog', art:{t:'dog',fur:'#f1e6da',muz:'#f8f1e9',ear:'puff',earC:'#e8d8c6'}},
+  {id:'spitz',   name:'Шпиц',        r:1, v:7300, fam:'dog', art:{t:'dog',fur:'#f0a14a',muz:'#f8c98a',ear:'pt',fluff:1,tongue:1,blush:1}},
+  // --- эпические ---
+  {id:'owl',     em:'🦉', name:'Сова',      r:2, v:28000},
+  {id:'flamingo',em:'🦩', name:'Фламинго',  r:2, v:29000},
+  {id:'wolf',    em:'🐺', name:'Волк',      r:2, v:30000},
+  {id:'shark',   em:'🦈', name:'Акула',     r:2, v:31000},
+  {id:'croc',    em:'🐊', name:'Крокодил',  r:2, v:32000},
+  {id:'sphynx',  name:'Сфинкс',      r:2, v:32500, fam:'cat', art:{t:'cat',fur:'#e8b9a8',f2:'#c48d7c',eye:'#7fd0a0',ear:'big',wrinkle:1,noWhisk:1,earIn:'#f5a0a8'}},
+  {id:'octopus', em:'🐙', name:'Осьминог',  r:2, v:33000},
+  {id:'persian', name:'Персидский кот',r:2, v:33500, fam:'cat', art:{t:'cat',fur:'#f4f0ea',eye:'#f0a13c',flat:1,fluff:1,chub:1}},
+  {id:'bulldog', name:'Бульдог',     r:2, v:33800, fam:'dog', art:{t:'dog',fur:'#efe2d1',muz:'#f6ede2',ear:'small',earC:'#c79d78',snout:'jowl',teeth:1,wrinkle:1}},
+  {id:'tiger',   em:'🐯', name:'Тигр',      r:2, v:34000},
+  {id:'bengal',  name:'Бенгальская кошка',r:2, v:34500, fam:'cat', art:{t:'cat',fur:'#e8a54b',f2:'#5a3a1e',eye:'#9be15d',pat:'spots'}},
+  {id:'doberman',name:'Доберман',    r:2, v:34800, fam:'dog', art:{t:'dog',fur:'#23201f',muz:'#23201f',ear:'pt',earIn:'#5a3a2a',pat:'tan',tan:'#b5652b'}},
+  {id:'mainecoon',name:'Мейн-кун',   r:2, v:35000, fam:'cat', art:{t:'cat',fur:'#8a6a4a',f2:'#4d3826',eye:'#e8c13a',pat:'tabby',tufts:1,fluff:1}},
+  {id:'shepherd',name:'Овчарка',     r:2, v:35200, fam:'dog', art:{t:'dog',fur:'#c88a4a',muz:'#2a1d14',ear:'pt',earC:'#2a1d14',earIn:'#6a4a3a',pat:'saddle',tongue:1}},
+  {id:'husky',   name:'Хаски',       r:2, v:35500, fam:'dog', art:{t:'dog',fur:'#6d7480',muz:'#fff',ear:'pt',pat:'mask',blue:1,earIn:'#c9c9c9'}},
+  {id:'lion',    em:'🦁', name:'Лев',       r:2, v:36000},
+  {id:'dalmatian',name:'Далматинец', r:2, v:36500, fam:'dog', art:{t:'dog',fur:'#fafafa',muz:'#fff',ear:'flop',earC:'#fafafa',pat:'spots'}},
+  {id:'shiba',   name:'Сиба-ину',    r:2, v:37000, fam:'dog', art:{t:'dog',fur:'#e0893a',muz:'#fff4e2',ear:'pt',pat:'shiba',blush:1}},
+  // --- легендарные ---
+  {id:'eagle',   em:'🦅', name:'Огненный орёл', r:3, v:240000},
+  {id:'peacock', em:'🦚', name:'Павлин',    r:3, v:250000},
+  {id:'unicorn', em:'🦄', name:'Единорог',  r:3, v:260000},
+  {id:'retriever',name:'Золотой ретривер',r:3, v:270000, fam:'dog', art:{t:'dog',fur:'#e2b064',muz:'#f1cf8f',ear:'flop',earC:'#c98f42',tongue:1,blush:1}},
+  {id:'whale',   em:'🐳', name:'Кит',       r:3, v:280000},
+  {id:'samoyed', name:'Самоед',      r:3, v:285000, fam:'dog', art:{t:'dog',fur:'#ffffff',muz:'#ffffff',ear:'pt',earIn:'#f2c5c5',fluff:1,tongue:1,blush:1}},
+  {id:'snowleo', name:'Снежный барс',r:3, v:290000, fam:'cat', art:{t:'cat',fur:'#e9edf2',f2:'#5c6470',eye:'#8fd3ff',pat:'spots',ring:1,fluff:1}},
+  {id:'dragon',  em:'🐉', name:'Дракон',    r:3, v:300000},
+  {id:'mastiff', name:'Тибетский мастиф',r:3, v:310000, fam:'dog', art:{t:'dog',fur:'#8a3a1e',muz:'#3a1a0e',ear:'small',earC:'#5a2410',fluff:1,snout:'flat'}},
+  {id:'trex',    em:'🦖', name:'Ти-рекс',   r:3, v:320000},
+  // --- мифические ---
+  {id:'spacecat',name:'Космокот',    r:4, v:2000000, fam:'cat', art:{t:'cat',fur:'#4b2fb8',eye:'#5ff7ff',pat:'stars',earIn:'#ff7ae0',whisk:'#ffffffaa'}},
+  {id:'golddog', name:'Золотой пёс', r:4, v:2200000, fam:'dog', art:{t:'dog',fur:'#ffcf3d',muz:'#fff0b0',ear:'flop',earC:'#e6a800',pat:'crown',tongue:1,sparkle:1}},
+  {id:'ghostwhale',em:'🐋', name:'Кит-призрак', r:4, v:2400000},
+  {id:'skydragon',em:'🐲', name:'Небесный дракон', r:4, v:2600000},
+];
+const VARS = [
+  {id:'',  name:'Обычный',  m:1,    odds:95, cls:''},
+  {id:'g', name:'Золотой',  m:1.25, odds:4,  cls:'vg'},
+  {id:'r', name:'Радужный', m:1.5,  odds:1,  cls:'vr'},
 ];
 const EGGS = [
-  {id:'basic',  em:'🥚', name:'Обычное яйцо',     price:500,    odds:[75,22,3,0,0]},
-  {id:'gold',   em:'🪺', name:'Золотое яйцо',     price:5000,   odds:[40,40,17,3,0]},
-  {id:'cosmic', em:'🌌', name:'Космическое яйцо', price:60000,  odds:[0,40,40,17,3]},
+  {id:'basic',  em:'🥚', name:'Обычное яйцо',     price:5000,   odds:[75,22,3,0,0]},
+  {id:'cats',   em:'🧺', name:'Кошачья корзинка', price:22000,  odds:[55,32,10,3,0], pool:'cat', desc:'Только кошки'},
+  {id:'dogs',   em:'🦴', name:'Собачья косточка', price:22000,  odds:[55,32,10,3,0], pool:'dog', desc:'Только собаки'},
+  {id:'gold',   em:'🪺', name:'Золотое яйцо',     price:25000,  odds:[40,40,17,3,0]},
+  {id:'cosmic', em:'🌌', name:'Космическое яйцо', price:200000, odds:[0,40,40,17,3]},
 ];
-const UPG_CHANCE = [0,45,15,5,1]; // шанс апгрейда на +1, +2, +3, +4 редкости
+const UPG_EDGE = 0.85, UPG_MAX = 70, LEVEL_REFUND = 0.5;
 const BOOSTS = [
-  {id:'tap',   em:'👆', name:'Сила тапа',      desc:l=>`+1 монета за тап (сейчас ${1+l})`,           base:100, mult:2},
-  {id:'energy',em:'🔋', name:'Запас энергии',  desc:l=>`+250 к максимуму (сейчас ${1000+250*l})`,   base:200, mult:2},
-  {id:'regen', em:'⚡', name:'Восстановление', desc:l=>`+1 энергии в секунду (сейчас ${3+l}/сек)`,  base:300, mult:2.2},
+  {id:'tap',   em:'👆', name:'Сила тапа',      desc:l=>`+5 монет за тап (сейчас ${5*(1+l)})`,        base:2000, mult:2},
+  {id:'energy',em:'🔋', name:'Запас энергии',  desc:l=>`+250 к максимуму (сейчас ${1000+250*l})`,   base:3000, mult:2},
+  {id:'regen', em:'⚡', name:'Восстановление', desc:l=>`+1 энергии в секунду (сейчас ${3+l}/сек)`,  base:4000, mult:2.2},
 ];
+const DAILY = [2000, 5000, 10000, {egg:'basic'}, 25000, 50000, {egg:'gold'}];
 const OFFLINE_CAP_H = 3;
 
-// ---------- СОСТОЯНИЕ ----------
+// ================= СОСТОЯНИЕ =================
 const KEY='zookombat_v1';
-const fresh=()=>({coins:0,boost:{tap:0,energy:0,regen:0},pets:{cat:{n:1,lvl:0}},main:'cat',energy:1000,last:Date.now()});
+const DEF_SET={sound:true,vol:.7,vib:true,anim:true};
+const DEF_ST={taps:0,eggs:0,upg:0,upgWin:0,sold:0,lvl:0,gotG:0,gotR:0,gotLeg:0};
+const fresh=()=>({ver:4,coins:0,boost:{tap:0,energy:0,regen:0},pets:{cat:{n:1,lvl:0}},main:'cat',energy:1000,last:Date.now(),set:{...DEF_SET},st:{...DEF_ST},done:{},daily:{day:0,last:''},hist:[]});
 let S;
-try{S=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){S=fresh()}
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S)S=fresh();
+if(!S.ver){S.coins=Math.floor(S.coins*10);S.ver=4}   // старые сохранения: цены выросли в 10 раз
+S.set=Object.assign({...DEF_SET},S.set||{});S.st=Object.assign({...DEF_ST},S.st||{});
+S.done=S.done||{};S.daily=S.daily||{day:0,last:''};S.hist=S.hist||[];
+for(const k of Object.keys(S.pets))if(!P(k.split(':')[0]))delete S.pets[k];
+S.coins=Math.floor(S.coins);
 const save=()=>{S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 
 const tg=window.Telegram&&window.Telegram.WebApp;
-if(tg&&tg.initData!==undefined){try{tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor('#1c1240')}catch(e){}}
-const haptic=t=>{try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(t||'light')}catch(e){}};
+if(tg){try{tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor('#1c1240')}catch(e){}}
+const haptic=t=>{if(!S.set.vib)return;try{if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred(t||'light');else if(navigator.vibrate)navigator.vibrate(t==='heavy'?40:t==='medium'?20:8)}catch(e){}};
 
+// ================= ЗВУК =================
+let AC=null;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,dur,type='sine',vol=.15,slide=0,delay=0){
+  if(!S.set.sound||S.set.vol<=0)return;const a=ac();if(!a)return;
+  const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol*S.set.vol,t+.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05);
+}
+function noise(dur=.15,vol=.15){
+  if(!S.set.sound)return;const a=ac();if(!a)return;
+  const b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const s=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();f.type='highpass';f.frequency.value=1200;
+  s.buffer=b;g.gain.value=vol*S.set.vol;s.connect(f).connect(g).connect(a.destination);s.start();
+}
+const SFX={
+  tap:()=>tone(480+Math.random()*120,.09,'triangle',.12,350),
+  buy:()=>{tone(880,.07,'square',.05);tone(1320,.12,'square',.05,0,.07)},
+  sell:()=>{[1046,1318,1568].forEach((f,i)=>tone(f,.1,'triangle',.08,0,i*.05))},
+  err:()=>tone(160,.18,'square',.06,-40),
+  tick:()=>tone(1500,.025,'square',.035),
+  crack:()=>noise(.12,.25),
+  win:()=>{[523,659,784,1046,1318].forEach((f,i)=>tone(f,.22,'triangle',.13,0,i*.09))},
+  big:()=>{[392,523,659,784,1046,1318,1568].forEach((f,i)=>tone(f,.3,'triangle',.12,0,i*.08));tone(130,.8,'sine',.15,0,.1)},
+  lose:()=>{tone(330,.25,'sawtooth',.07,-120);tone(220,.45,'sawtooth',.07,-120,.22)},
+  click:()=>tone(700,.04,'sine',.08),
+  lvl:()=>{tone(523,.08,'triangle',.1);tone(784,.08,'triangle',.1,0,.06);tone(1046,.16,'triangle',.1,0,.12)},
+  whoosh:()=>noise(.5,.08),
+};
+
+// ================= ХЕЛПЕРЫ =================
+function P(id){return PETS.find(p=>p.id===id)}
 const $=id=>document.getElementById(id);
-const P=id=>PETS.find(p=>p.id===id);
-const fmt=n=>{n=Math.floor(n);if(n<1e4)return n.toLocaleString('ru-RU');const u=['K','M','B','T'];let i=-1;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(n<10?2:n<100?1:0)+u[i]};
-const tapPower=()=>1+S.boost.tap;
+const K=(id,v)=>v?id+':'+v:id;
+const PK=k=>{const [id,v='']=k.split(':');return {p:P(id),v:VARS.find(x=>x.id===v)||VARS[0]}};
+const ALL_KEYS=PETS.flatMap(p=>VARS.map(v=>K(p.id,v.id)));
+const fmt=n=>{n=Math.floor(n);if(n<1e5)return n.toLocaleString('ru-RU');const u=['K','M','B','T'];let i=-1;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(n<10?2:n<100?1:0)+u[i]};
+const fmtPct=c=>{if(c>=10)return c.toFixed(1)+'%';if(c>=1)return c.toFixed(2)+'%';if(c>=0.0001)return parseFloat(c.toPrecision(2)).toString().replace('.',',')+'%';return c>0?'<0,0001%':'0%'};
+const tapPower=()=>5*(1+S.boost.tap);
 const maxEnergy=()=>1000+250*S.boost.energy;
 const regen=()=>3+S.boost.regen;
-const petIncome=id=>{const o=S.pets[id];if(!o)return 0;return RARITY[P(id).r].income*(1+0.5*(o.n-1))*Math.pow(1.25,o.lvl)};
-const perMin=()=>Object.keys(S.pets).reduce((a,id)=>a+petIncome(id),0);
-const lvlCost=id=>Math.floor(RARITY[P(id).r].income*20*Math.pow(1.7,S.pets[id].lvl));
+const kVal=k=>{const {p,v}=PK(k);return Math.round(p.v*v.m)};
+const kIncFor=(k,n,l)=>{const {p,v}=PK(k);return Math.max(1,Math.round(RARITY[p.r].inc*v.m*(1+0.5*(n-1))*Math.pow(1.25,l)))};
+const kInc=k=>{const o=S.pets[k];return o?kIncFor(k,o.n,o.lvl):0};
+const perSec=()=>Object.keys(S.pets).reduce((a,k)=>a+kInc(k),0);
+const lvlCostAt=(k,l)=>{const {p,v}=PK(k);return Math.floor(RARITY[p.r].inc*v.m*600*Math.pow(1.7,l))};
+const lvlCost=k=>lvlCostAt(k,S.pets[k].lvl);
+const lvlSpent=k=>{let s=0;for(let l=0;l<S.pets[k].lvl;l++)s+=lvlCostAt(k,l);return s};
+const copiesValue=(k,n)=>{const o=S.pets[k];if(!o||n<=0)return 0;return kVal(k)*n+(n>=o.n?Math.floor(lvlSpent(k)*LEVEL_REFUND):0)};
 const boostCost=b=>Math.floor(b.base*Math.pow(b.mult,S.boost[b.id]));
 const rc=r=>RARITY[r].color;
+const anim=()=>S.set.anim;
+const emH=k=>{const {p,v}=PK(k);return `<span class="pe ${v.cls}">${p.art?artSVG(p):p.em}</span>`};
+const vTag=k=>{const {v}=PK(k);return v.id?`<span class="vtag ${v.cls}">${v.name}</span>`:''};
+const addCoins=n=>{S.coins=Math.floor(S.coins+n)};
 
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',1800)}
 function modal(html){$('mbox').innerHTML=html;$('modal').classList.add('show')}
 function closeModal(){$('modal').classList.remove('show')}
-$('modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.dataset.close!==undefined)closeModal()});
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.closest('[data-close]')){SFX.click();closeModal()}});
+function bumpCoin(){const c=$('balCoin');c.classList.remove('bump');void c.offsetWidth;c.classList.add('bump')}
+function confetti(color,count=60,rainbow){
+  if(!anim())return;const cols=rainbow?['#ff4d4d','#ffb84d','#fff94d','#4dff88','#4dc3ff','#b84dff']:[color,'#ffc83d','#fff','#3ddc84','#7c5cff'];
+  for(let i=0;i<count;i++){const d=document.createElement('div');d.className='confetti';d.style.background=cols[i%cols.length];
+    d.style.left=(50+(Math.random()-.5)*20)+'vw';d.style.top='45vh';document.body.appendChild(d);
+    const dx=(Math.random()-.5)*600,dy=-200-Math.random()*300;
+    d.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx*.6}px,${dy}px) rotate(${Math.random()*720}deg)`,opacity:1,offset:.35},{transform:`translate(${dx}px,${dy+700}px) rotate(${Math.random()*1440}deg)`,opacity:0}],{duration:1600+Math.random()*900,easing:'cubic-bezier(.2,.6,.4,1)'}).onfinish=()=>d.remove();}
+}
+function flash(){if(!anim())return;const f=document.createElement('div');f.className='flash';document.body.appendChild(f);setTimeout(()=>f.remove(),500)}
+function applyAnimClass(){document.body.classList.toggle('noanim',!anim())}
 
-// ---------- ОФЛАЙН-ДОХОД ----------
+// ================= ОФЛАЙН-ДОХОД =================
 (function(){
-  const sec=Math.min((Date.now()-S.last)/1000,OFFLINE_CAP_H*3600);
+  const sec=Math.floor(Math.min((Date.now()-S.last)/1000,OFFLINE_CAP_H*3600));
   if(sec>60){
-    const earned=perMin()*sec/60;
-    S.coins+=earned;S.energy=Math.min(maxEnergy(),S.energy+regen()*sec);
-    if(earned>=1)setTimeout(()=>modal(`<div style="font-size:56px">🐾</div><h2>Пока тебя не было</h2><p class="sub">Твои звери заработали</p><div class="balance"><span class="coin">Z</span>${fmt(earned)}</div><button class="btn wide" data-close>Забрать</button>`),300);
+    const earned=perSec()*sec;addCoins(earned);S.energy=Math.min(maxEnergy(),S.energy+regen()*sec);
+    if(earned>=1)setTimeout(()=>modal(`<div class="revealWrap" style="--rc:#ffc83d"><div class="rays"></div><div class="reveal">💰</div></div><h2>Пока тебя не было</h2><p class="sub">Твои звери заработали</p><div class="balance"><span class="coin">Z</span>${fmt(earned)}</div><button class="btn wide gold" data-close>Забрать</button>`),300);
   }
 })();
 
-// ---------- ТАП ----------
+// ================= ТАП =================
+let lastPart=0;
 $('tapbtn').addEventListener('pointerdown',e=>{
-  if(S.energy<tapPower()){toast('Нет энергии — подожди или прокачай буст');return}
-  S.energy-=tapPower();S.coins+=tapPower();haptic();
+  if(S.energy<1){SFX.err();toast('Нет энергии — подожди или прокачай буст');return}
+  S.energy-=1;addCoins(tapPower());S.st.taps++;haptic();SFX.tap();
+  const btn=$('tapbtn'),r=btn.getBoundingClientRect();
+  if(anim()){
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    btn.style.transform=`perspective(600px) rotateX(${-y*22}deg) rotateY(${x*22}deg) scale(.97)`;
+    clearTimeout(btn._t);btn._t=setTimeout(()=>btn.style.transform='',110);
+    const em=$('mainEm');em.classList.remove('squish');void em.offsetWidth;em.classList.add('squish');
+    const w=document.createElement('div');w.className='wave';w.style.left=(e.clientX-r.left)+'px';w.style.top=(e.clientY-r.top)+'px';w.style.transform='translate(-50%,-50%)';btn.appendChild(w);setTimeout(()=>w.remove(),500);
+    const now=performance.now();
+    if(now-lastPart>90){lastPart=now;const t=$('balCoin').getBoundingClientRect();
+      for(let i=0;i<2;i++){const c=document.createElement('div');c.className='pcoin';c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';document.body.appendChild(c);
+        const mx=(Math.random()-.5)*120,my=-40-Math.random()*60;
+        c.animate([{transform:'translate(-50%,-50%) scale(1)'},{transform:`translate(calc(-50% + ${mx}px),calc(-50% + ${my}px)) scale(1.2)`,offset:.35},{transform:`translate(calc(-50% + ${t.left+18-e.clientX}px),calc(-50% + ${t.top+18-e.clientY}px)) scale(.6)`,opacity:.6}],{duration:650+i*90,easing:'cubic-bezier(.5,0,.6,1)'}).onfinish=()=>{c.remove();bumpCoin()};}}
+  }
   const f=document.createElement('div');f.className='float';f.textContent='+'+tapPower();
-  f.style.left=(e.clientX-14)+'px';f.style.top=(e.clientY-30)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),900);
-  renderTop();
+  f.style.left=(e.clientX-14+(Math.random()-.5)*30)+'px';f.style.top=(e.clientY-30)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),900);
+  $('bal').textContent=fmt(S.coins);renderTop();
 });
 
-// ---------- НАВИГАЦИЯ ----------
+// ================= НАВИГАЦИЯ =================
 let cur='tap';
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  if(cur===b.dataset.s)return;SFX.click();haptic();
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('s-'+b.dataset.s).classList.add('active');
-  cur=b.dataset.s;render();
+  cur=b.dataset.s;$('main').scrollTop=0;render();
 });
 
-// ---------- РЕНДЕР ----------
+// ================= РЕНДЕР =================
 function renderTop(){
-  $('bal').textContent=fmt(S.coins);$('ppm').textContent='+'+fmt(perMin());$('tpw').textContent=tapPower();
-  $('col').textContent=Object.keys(S.pets).length+'/'+PETS.length;
+  $('pps').textContent='+'+fmt(perSec());$('tpw').textContent='+'+tapPower();
+  $('col').textContent=Object.keys(S.pets).length+'/'+ALL_KEYS.length;
   $('etxt').textContent=Math.floor(S.energy)+'/'+maxEnergy();$('efill').style.width=(S.energy/maxEnergy()*100)+'%';
-  if(cur==='eggs'||cur==='boost'||cur==='col')refreshButtons();
+  refreshButtons();
 }
 function renderTap(){
-  const m=S.main&&S.pets[S.main]?P(S.main):null;
-  $('mainEm').textContent=m?m.em:'🐾';$('tapbtn').style.setProperty('--rc',m?rc(m.r):'#7c5cff');
-  $('mainName').innerHTML=m?`<span class="tag" style="--rc:${rc(m.r)}">${RARITY[m.r].name}</span> ${m.name}`:'Купи яйцо, чтобы получить зверя';
+  const k=S.main&&S.pets[S.main]?S.main:null;
+  if(!k){$('mainEm').textContent='🐾';$('mainName').textContent='Купи яйцо, чтобы получить зверя';return}
+  const {p}=PK(k);
+  $('mainEm').innerHTML=emH(k);$('tapbtn').style.setProperty('--rc',rc(p.r));
+  $('mainName').innerHTML=`<span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span> ${p.name}${vTag(k)}`;
 }
-function petCard(p,extra=''){
-  const o=S.pets[p.id];
-  if(!o)return `<div class="pet locked" style="--rc:${rc(p.r)}"><div class="em">❔</div><div class="nm">???</div><div class="inc"><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span></div></div>`;
-  return `<div class="pet ${extra}" data-id="${p.id}" style="--rc:${rc(p.r)}">${o.n>1?`<span class="cnt">x${o.n}</span>`:''}<div class="em">${p.em}</div><div class="nm">${p.name}</div><div class="inc">+${fmt(petIncome(p.id))}/мин · ур.${o.lvl}</div></div>`;
+function petCard(k,mode,i=0,extra=''){
+  const {p,v}=PK(k),own=S.pets[k],d=`--d:${Math.min(i,30)*0.02}s`,cls=`pet ${v.cls} ${extra}`;
+  if(mode==='locked')return `<div class="pet locked" style="--rc:${rc(p.r)};${d}"><div class="em">❔</div><div class="nm">???</div><div class="inc"><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span></div></div>`;
+  if(mode==='target')return `<div class="${cls}" data-k="${k}" style="--rc:${rc(p.r)};${d}"><div class="em">${emH(k)}</div><div class="nm">${p.name}</div><div class="price">${fmt(kVal(k))}</div></div>`;
+  if(mode==='stake'){const left=own.n-(U.pets[k]||0);
+    return `<div class="${cls} ${left<=0?'dim':''}" data-k="${k}" style="--rc:${rc(p.r)};${d}">${left>0?`<span class="cnt">x${left}</span>`:''}<div class="em">${emH(k)}</div><div class="nm">${p.name}</div><div class="price">${fmt(kVal(k))}</div></div>`}
+  return `<div class="${cls}" data-k="${k}" style="--rc:${rc(p.r)};${d}">${own.n>1?`<span class="cnt">x${own.n}</span>`:''}<div class="em">${emH(k)}</div><div class="nm">${p.name}</div><div class="inc">+${fmt(kInc(k))}/сек · ур.${own.lvl}</div></div>`;
 }
+const ownedKeys=()=>Object.keys(S.pets).sort((a,b)=>kVal(b)-kVal(a));
 function renderCol(){
-  $('colGrid').innerHTML=PETS.slice().sort((a,b)=>b.r-a.r).map(p=>petCard(p)).join('');
-  $('colGrid').querySelectorAll('.pet[data-id]').forEach(el=>el.onclick=()=>openPet(el.dataset.id));
+  const own=ownedKeys(),ownBase=new Set(own.map(k=>PK(k).p.id));
+  const locked=PETS.filter(p=>!ownBase.has(p.id)).sort((a,b)=>b.v-a.v);
+  $('colGrid').innerHTML=own.map((k,i)=>petCard(k,'col',i)).join('')+locked.map((p,i)=>petCard(p.id,'locked',own.length+i)).join('');
+  $('colGrid').querySelectorAll('.pet[data-k]').forEach(el=>el.onclick=()=>{SFX.click();openPet(el.dataset.k)});
 }
-function openPet(id){
-  const p=P(id),o=S.pets[id],c=lvlCost(id),next=RARITY[p.r].income*(1+0.5*(o.n-1))*Math.pow(1.25,o.lvl+1);
-  modal(`<div class="reveal glow" style="--rc:${rc(p.r)}">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span><h2>${p.name}</h2>
-  <p class="sub">Уровень ${o.lvl} · копий: ${o.n}<br>Доход: <b>${fmt(petIncome(id))}</b> → <b style="color:#3ddc84">${fmt(next)}</b> в минуту</p>
-  <button class="btn wide gold" id="lvlBtn" ${S.coins<c?'disabled':''}>Прокачать за ${fmt(c)} <span class="coin sm">Z</span></button>
+function openPet(k){
+  const o=S.pets[k];if(!o){closeModal();return}
+  const {p}=PK(k),c=lvlCost(k),next=kIncFor(k,o.n,o.lvl+1);
+  const sell1=o.n>1?kVal(k):copiesValue(k,1);
+  modal(`<div class="revealWrap" style="--rc:${rc(p.r)}"><div class="rays"></div><div class="reveal">${emH(k)}</div></div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>${vTag(k)}<h2>${p.name}</h2>
+  <p class="sub">Уровень ${o.lvl} · копий: ${o.n} · цена ${fmt(kVal(k))}<br>Доход: <b>${fmt(kInc(k))}</b> → <b style="color:var(--green)">${fmt(next)}</b> в секунду</p>
+  <button class="btn wide gold" id="lvlBtn" ${S.coins<c?'disabled':''}>⬆️ Прокачать за ${fmt(c)}</button>
   <div style="height:8px"></div>
-  <button class="btn wide" id="mainBtn" ${S.main===id?'disabled':''}>${S.main===id?'Уже главный':'Сделать главным'}</button>
-  <div style="height:8px"></div><button class="btn wide" style="background:#ffffff14" data-close>Закрыть</button>`);
-  $('lvlBtn').onclick=()=>{if(S.coins<c)return;S.coins-=c;o.lvl++;haptic('medium');save();render();openPet(id)};
-  $('mainBtn').onclick=()=>{S.main=id;save();render();closeModal();toast(p.name+' теперь главный')};
+  <div style="display:flex;gap:8px"><button class="btn green" style="flex:1" id="sell1">Продать 1 · ${fmt(sell1)}</button>
+  ${o.n>1?`<button class="btn green" style="flex:1" id="sellDup">Дубли · ${fmt(kVal(k)*(o.n-1))}</button>`:''}</div>
+  <div style="height:8px"></div>
+  <button class="btn wide" id="mainBtn" ${S.main===k?'disabled':''}>${S.main===k?'⭐ Уже главный':'⭐ Сделать главным'}</button>
+  <div style="height:8px"></div><button class="btn wide ghost" data-close>Закрыть</button>`);
+  $('lvlBtn').onclick=()=>{if(S.coins<c)return;S.coins-=c;o.lvl++;S.st.lvl++;haptic('medium');SFX.lvl();save();render();openPet(k)};
+  $('sell1').onclick=()=>{sellPet(k,1);S.pets[k]?openPet(k):closeModal()};
+  if($('sellDup'))$('sellDup').onclick=()=>{sellPet(k,o.n-1);openPet(k)};
+  $('mainBtn').onclick=()=>{S.main=k;SFX.click();save();render();closeModal();toast(p.name+' теперь главный')};
 }
+function removePet(k,n){const o=S.pets[k];o.n-=n;if(o.n<=0){delete S.pets[k];if(S.main===k)S.main=ownedKeys()[0]||null}}
+function sellPet(k,n){const v=copiesValue(k,n);removePet(k,n);addCoins(v);S.st.sold+=n;SFX.sell();haptic('medium');bumpCoin();toast(`Продано за ${fmt(v)}`);save();render()}
+
 function renderEggs(){
-  $('eggList').innerHTML=EGGS.map(e=>`<div class="row"><div class="ic">${e.em}</div><div class="info"><b>${e.name}</b>
+  $('eggList').innerHTML=EGGS.map(e=>`<div class="row"><div class="ic">${e.em}</div><div class="info"><b>${e.name}</b>${e.desc?`<span>${e.desc}</span>`:''}
     <div class="odds">${e.odds.map((o,i)=>o?`<span style="--rc:${rc(i)}">${RARITY[i].name} ${o}%</span>`:'').join('')}</div></div>
     <button class="btn gold" data-egg="${e.id}">${fmt(e.price)}</button></div>`).join('');
   $('eggList').querySelectorAll('[data-egg]').forEach(b=>b.onclick=()=>openEgg(b.dataset.egg));
   refreshButtons();
 }
-function rollRarity(odds){let x=Math.random()*100;for(let i=0;i<odds.length;i++){if(x<odds[i])return i;x-=odds[i]}return 0}
-function randomPetOf(r){const l=PETS.filter(p=>p.r===r);return l[Math.floor(Math.random()*l.length)]}
-function addPet(id){if(S.pets[id])S.pets[id].n++;else S.pets[id]={n:1,lvl:0};if(!S.main||!S.pets[S.main])S.main=id}
-function openEgg(eid){
-  const e=EGGS.find(x=>x.id===eid);if(S.coins<e.price){toast('Не хватает монет');return}
-  S.coins-=e.price;const p=randomPetOf(rollRarity(e.odds));const isNew=!S.pets[p.id];addPet(p.id);save();render();
-  modal(`<div class="reveal shake" style="font-size:96px">${e.em}</div><p class="sub">Открываем...</p>`);haptic('heavy');
+function rollFrom(odds){let x=Math.random()*100;for(let i=0;i<odds.length;i++){if(x<odds[i])return i;x-=odds[i]}return 0}
+function randomPetOf(r,pool){let l=PETS.filter(p=>p.r===r&&(!pool||p.fam===pool));if(!l.length)l=PETS.filter(p=>p.r===r);return l[Math.floor(Math.random()*l.length)]}
+function addPet(k){if(S.pets[k])S.pets[k].n++;else S.pets[k]={n:1,lvl:0};if(!S.main||!S.pets[S.main])S.main=k;
+  const {p,v}=PK(k);if(v.id==='g')S.st.gotG=1;if(v.id==='r')S.st.gotR=1;if(p.r>=3)S.st.gotLeg=1}
+function showPetWin(k,title,text,btns){
+  const {p,v}=PK(k);flash();(p.r>=3||v.id?SFX.big:SFX.win)();haptic('heavy');
+  if(p.r>=2||v.id)confetti(v.id==='g'?'#ffd24a':rc(p.r),p.r>=3||v.id?110:60,v.id==='r');
+  modal(`<div class="revealWrap" style="--rc:${v.id==='g'?'#ffd24a':v.id==='r'?'#ff4dff':rc(p.r)}"><div class="rays"></div><div class="reveal">${emH(k)}</div></div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>${vTag(k)}
+  <h2>${title}</h2><p class="sub">${text}</p>${btns}`);
+}
+function openEgg(eid,free){
+  const e=EGGS.find(x=>x.id===eid);
+  if(!free){if(S.coins<e.price){SFX.err();toast('Не хватает монет');return}S.coins-=e.price}
+  const p=randomPetOf(rollFrom(e.odds),e.pool),v=VARS[rollFrom(VARS.map(x=>x.odds))],k=K(p.id,v.id);
+  const isNew=!S.pets[k];addPet(k);S.st.eggs++;save();render();
+  SFX.buy();
+  modal(`<div class="revealWrap"><div class="egg">${e.em}</div></div><p class="sub">${free?'Бесплатное яйцо!':'Открываем...'}</p>`);
+  const dur=anim()?1300:300;
+  if(anim())[0,300,550,750,900,1020,1120,1200].forEach((t,i)=>setTimeout(()=>{SFX.crack();haptic(i>4?'medium':'light')},t));
   setTimeout(()=>{
-    modal(`<div class="reveal glow" style="--rc:${rc(p.r)}">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>
-    <h2>${p.name}</h2><p class="sub">${isNew?'🎉 Новый зверь в коллекции!':'Дубликат: +50% к доходу этого зверя'}<br>Теперь приносит ${fmt(petIncome(p.id))} в минуту</p>
-    <button class="btn wide gold" id="again">Ещё одно за ${fmt(e.price)}</button><div style="height:8px"></div><button class="btn wide" data-close>Круто!</button>`);
-    if(p.r>=3)haptic('heavy');
+    showPetWin(k,p.name,`${isNew?'🎉 Новый зверь в коллекции!':'Дубликат: +50% к доходу этого зверя'}<br>+${fmt(kInc(k))}/сек · цена ${fmt(kVal(k))}`,
+      `<button class="btn wide gold" id="again">Ещё одно за ${fmt(e.price)}</button><div style="height:8px"></div>
+       <div style="display:flex;gap:8px"><button class="btn green" style="flex:1" id="quickSell">Продать · ${fmt(kVal(k))}</button><button class="btn" style="flex:1" data-close>Круто!</button></div>`);
     $('again').disabled=S.coins<e.price;$('again').onclick=()=>openEgg(eid);
-  },1100);
+    $('quickSell').onclick=()=>{sellPet(k,1);closeModal()};
+  },dur);
 }
 function renderBoost(){
   $('boostList').innerHTML=BOOSTS.map(b=>`<div class="row"><div class="ic">${b.em}</div><div class="info"><b>${b.name} · ур.${S.boost[b.id]}</b><span>${b.desc(S.boost[b.id])}</span></div>
     <button class="btn gold" data-b="${b.id}">${fmt(boostCost(b))}</button></div>`).join('');
   $('boostList').querySelectorAll('[data-b]').forEach(el=>el.onclick=()=>{
-    const b=BOOSTS.find(x=>x.id===el.dataset.b),c=boostCost(b);if(S.coins<c)return;
-    S.coins-=c;S.boost[b.id]++;haptic('medium');save();render();
+    const b=BOOSTS.find(x=>x.id===el.dataset.b),c=boostCost(b);if(S.coins<c){SFX.err();return}
+    S.coins-=c;S.boost[b.id]++;haptic('medium');SFX.lvl();save();render();
   });
   refreshButtons();
 }
 function refreshButtons(){
   document.querySelectorAll('[data-egg]').forEach(b=>b.disabled=S.coins<EGGS.find(e=>e.id===b.dataset.egg).price);
   document.querySelectorAll('[data-b]').forEach(b=>b.disabled=S.coins<boostCost(BOOSTS.find(x=>x.id===b.dataset.b)));
+  $('questDot').classList.toggle('show',dailyAvailable()||QUESTS.some(q=>questReady(q)));
 }
 
-// ---------- АПГРЕЙДЕР ----------
-let U={pet:null,tier:null,spinning:false};
+// ================= ЕЖЕДНЕВКА И ЗАДАНИЯ =================
+const dayStr=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const today=()=>dayStr(new Date());
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayStr(d)};
+const dailyAvailable=()=>S.daily.last!==today();
+const nextDay=()=>S.daily.last===yesterday()?(S.daily.day%7)+1:1;
+const rewardTxt=r=>typeof r==='number'?fmt(r):EGGS.find(e=>e.id===r.egg).em;
+function renderQuest(){
+  const avail=dailyAvailable(),nd=avail?nextDay():S.daily.day;
+  $('days').innerHTML=DAILY.map((r,i)=>{const d=i+1,got=avail?d<nd:d<=nd,now=avail&&d===nd;
+    return `<div class="day ${got?'got':''} ${now?'now':''}">День ${d}<b>${got?'✅':typeof r==='number'?'💰':rewardTxt(r)}</b>${typeof r==='number'?fmt(r):'яйцо'}</div>`}).join('');
+  $('claimDaily').disabled=!avail;
+  $('claimDaily').textContent=avail?`Забрать награду дня ${nd}`:'Приходи завтра 🌙';
+  const ord=q=>S.done[q.id]?2:questReady(q)?0:1;
+  $('questList').innerHTML=QUESTS.slice().sort((x,y)=>ord(x)-ord(y)).map(q=>{const [c,g]=q.prog(),done=S.done[q.id],ready=questReady(q);
+    return `<div class="row"><div class="ic">${q.em}</div><div class="info"><b>${q.name}</b><span>Награда: ${fmt(q.reward)}</span><div class="prog"><i style="width:${Math.min(100,c/g*100)}%"></i></div></div>
+      <button class="btn ${ready?'gold':'ghost'}" data-q-id="${q.id}" ${ready?'':'disabled'}>${done?'✅':ready?'Забрать':Math.min(c,g)+'/'+g}</button></div>`}).join('');
+  $('questList').querySelectorAll('[data-q-id]').forEach(b=>b.onclick=()=>{const q=QUESTS.find(x=>x.id===b.dataset.qId);if(!questReady(q))return;
+    S.done[q.id]=1;addCoins(q.reward);SFX.win();haptic('heavy');bumpCoin();confetti('#3ddc84',40);toast(`+${fmt(q.reward)}`);save();render()});
+}
+$('claimDaily').onclick=()=>{
+  if(!dailyAvailable())return;const d=nextDay(),r=DAILY[d-1];S.daily={day:d,last:today()};save();
+  if(typeof r==='number'){addCoins(r);SFX.win();haptic('heavy');confetti('#ffc83d',50);bumpCoin();toast(`День ${d}: +${fmt(r)}`);render()}
+  else{render();openEgg(r.egg,true)}
+};
+const famCount=f=>new Set(Object.keys(S.pets).map(k=>PK(k).p).filter(p=>p.fam===f).map(p=>p.id)).size;
+const speciesCount=()=>new Set(Object.keys(S.pets).map(k=>k.split(':')[0])).size;
+const QUESTS=[
+  {id:'tap100',  em:'👆',name:'Сделай 100 тапов',          reward:2000,   prog:()=>[S.st.taps,100]},
+  {id:'tap1000', em:'👆',name:'Сделай 1 000 тапов',        reward:10000,  prog:()=>[S.st.taps,1000]},
+  {id:'tap10k',  em:'🔥',name:'Сделай 10 000 тапов',       reward:80000,  prog:()=>[S.st.taps,10000]},
+  {id:'egg1',    em:'🥚',name:'Открой первое яйцо',        reward:3000,   prog:()=>[S.st.eggs,1]},
+  {id:'egg10',   em:'🥚',name:'Открой 10 яиц',             reward:30000,  prog:()=>[S.st.eggs,10]},
+  {id:'egg50',   em:'🪺',name:'Открой 50 яиц',             reward:150000, prog:()=>[S.st.eggs,50]},
+  {id:'sell1',   em:'💸',name:'Продай зверя',              reward:2000,   prog:()=>[S.st.sold,1]},
+  {id:'lvl1',    em:'⬆️',name:'Прокачай зверя',            reward:3000,   prog:()=>[S.st.lvl,1]},
+  {id:'lvl10',   em:'⬆️',name:'Сделай 10 прокачек',        reward:25000,  prog:()=>[S.st.lvl,10]},
+  {id:'upg1',    em:'🎰',name:'Сделай апгрейд',            reward:5000,   prog:()=>[S.st.upg,1]},
+  {id:'upgw1',   em:'🏆',name:'Выиграй апгрейд',           reward:15000,  prog:()=>[S.st.upgWin,1]},
+  {id:'upgw10',  em:'🏆',name:'Выиграй 10 апгрейдов',      reward:120000, prog:()=>[S.st.upgWin,10]},
+  {id:'sp10',    em:'🐾',name:'Собери 10 разных зверей',   reward:40000,  prog:()=>[speciesCount(),10]},
+  {id:'sp30',    em:'🐾',name:'Собери 30 разных зверей',   reward:300000, prog:()=>[speciesCount(),30]},
+  {id:'cats5',   em:'🐱',name:'Собери 5 пород кошек',      reward:60000,  prog:()=>[famCount('cat'),5]},
+  {id:'dogs5',   em:'🐶',name:'Собери 5 пород собак',      reward:60000,  prog:()=>[famCount('dog'),5]},
+  {id:'gold',    em:'✨',name:'Получи золотого зверя',     reward:50000,  prog:()=>[S.st.gotG,1]},
+  {id:'rainbow', em:'🌈',name:'Получи радужного зверя',    reward:150000, prog:()=>[S.st.gotR,1]},
+  {id:'leg',     em:'👑',name:'Получи легендарного зверя', reward:200000, prog:()=>[S.st.gotLeg,1]},
+  {id:'inc100',  em:'💰',name:'Доход 100 в секунду',       reward:50000,  prog:()=>[perSec(),100]},
+  {id:'inc1000', em:'💰',name:'Доход 1 000 в секунду',     reward:500000, prog:()=>[perSec(),1000]},
+];
+const questReady=q=>{if(S.done[q.id])return false;const [c,g]=q.prog();return c>=g};
+
+// ================= АПГРЕЙДЕР =================
+let U={pets:{},coins:0,target:null,spinning:false,sortAsc:true,ang:180,hold:false};
+const stakeValue=()=>Math.min(U.coins,S.coins)+Object.entries(U.pets).reduce((a,[k,n])=>a+copiesValue(k,n),0);
+const chanceFor=k=>{const s=stakeValue(),t=kVal(k);if(!s||t<=s)return 0;return Math.min(UPG_MAX,s/t*100*UPG_EDGE)};
+function cleanStake(){for(const k in U.pets){const o=S.pets[k];if(!o)delete U.pets[k];else if(U.pets[k]>o.n)U.pets[k]=o.n}if(U.coins>S.coins)U.coins=S.coins}
+(function(){let s='';for(let i=0;i<72;i++){const a=i*5*Math.PI/180,big=i%6===0,r1=big?88:91,r2=96;
+  s+=`<line x1="${(100+r1*Math.sin(a)).toFixed(2)}" y1="${(100-r1*Math.cos(a)).toFixed(2)}" x2="${(100+r2*Math.sin(a)).toFixed(2)}" y2="${(100-r2*Math.cos(a)).toFixed(2)}" stroke="${big?'#ffffff55':'#ffffff22'}" stroke-width="${big?1.6:1}" stroke-linecap="round"/>`}
+  $('ticks').innerHTML=s})();
+const CIRC=2*Math.PI*76;
+// зона выигрыша растёт от низа колеса вверх в обе стороны
+function drawWheel(ch){
+  const half=ch>0?Math.max(0.5,ch/100*CIRC/2):0;
+  for(const id of ['arcA','arcB'])$(id).style.strokeDasharray=`${half} ${CIRC}`;
+  const tk=U.target;
+  $('center').innerHTML=tk?`<div class="cem">${emH(tk)}</div><div class="cpct">${fmtPct(ch)}</div><div class="clbl">шанс</div>`
+    :`<div class="chev">⏫</div><div class="clbl" style="margin-top:6px">выбери цель</div>`;
+}
+function unhold(){if(U.hold){U.hold=false;$('wheel').classList.remove('win','lose')}}
 function renderUpg(){
-  if(U.pet&&!S.pets[U.pet])U.pet=null;
-  const p=U.pet?P(U.pet):null;
-  $('upFrom').innerHTML=p?`<div class="em">${p.em}</div><span class="tag" style="--rc:${rc(p.r)}">${RARITY[p.r].name}</span>${p.name}`:'Выбери зверя ниже';
-  $('upFrom').style.borderColor=p?rc(p.r):'';
-  $('tiers').innerHTML=RARITY.map((r,i)=>`<button style="--rc:${r.color}" data-t="${i}" class="${U.tier===i?'on':''}" ${!p||i<=p.r?'disabled':''}>${r.name}</button>`).join('');
-  $('tiers').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(U.spinning)return;U.tier=+b.dataset.t;renderUpg()});
-  if(p&&U.tier!==null&&U.tier<=p.r)U.tier=null;
-  const ch=p&&U.tier!==null?UPG_CHANCE[U.tier-p.r]:0;
-  $('upTo').innerHTML=U.tier!==null?`<div class="em">❔</div><span class="tag" style="--rc:${rc(U.tier)}">${RARITY[U.tier].name}</span>случайный зверь`:'Выбери редкость';
-  $('upTo').style.borderColor=U.tier!==null?rc(U.tier):'';
-  $('pct').textContent=ch+'%';$('arc').setAttribute('stroke-dasharray',(ch/100*264)+' 264');
-  $('spin').disabled=!ch||U.spinning;
-  const owned=PETS.filter(x=>S.pets[x.id]&&x.r<4).sort((a,b)=>b.r-a.r);
-  $('upGrid').innerHTML=owned.length?owned.map(x=>petCard(x,U.pet===x.id?'sel':'')).join(''):'<p class="sub">Нет зверей для апгрейда</p>';
-  $('upGrid').querySelectorAll('.pet[data-id]').forEach(el=>el.onclick=()=>{if(U.spinning)return;U.pet=el.dataset.id;U.tier=null;renderUpg()});
+  cleanStake();
+  const sv=stakeValue();
+  if(U.target&&kVal(U.target)<=sv)U.target=null;
+  const tk=U.target,ch=tk?chanceFor(tk):0;
+  if(!U.spinning&&!U.hold)drawWheel(ch);
+  const petEms=Object.entries(U.pets).map(([k,n])=>emH(k).repeat(Math.min(n,3))).join('');
+  $('upFrom').className='slot'+(sv?' filled':'');
+  $('upFrom').innerHTML=sv?`${petEms?`<div class="ems">${petEms}</div>`:''}${U.coins?`<div>💰 ${fmt(U.coins)}</div>`:''}<div class="val">${fmt(sv)}</div>`:'Поставь монеты<br>или зверей';
+  $('upFrom').style.borderColor=sv?'var(--gold)':'';
+  if(tk){const {p}=PK(tk);$('upTo').className='slot filled';$('upTo').innerHTML=`<div class="em">${emH(tk)}</div><div class="nm">${p.name}</div>${vTag(tk)}<div class="val">${fmt(kVal(tk))}</div>`;$('upTo').style.borderColor=rc(p.r)}
+  else{$('upTo').className='slot';$('upTo').innerHTML='Выбери, кого<br>хочешь получить';$('upTo').style.borderColor=''}
+  $('spin').disabled=U.spinning||!tk||ch<=0;
+  const rg=$('stakeRange');rg.max=S.coins;rg.value=U.coins;$('stakeCoinsTxt').textContent=fmt(U.coins);
+  $('chips').innerHTML=Object.entries(U.pets).map(([k,n])=>`<span class="chip" style="--rc:${rc(PK(k).p.r)}" data-k="${k}">${emH(k)}<small>x${n} ✕</small></span>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{if(U.spinning)return;unhold();const k=c.dataset.k;U.pets[k]--;if(U.pets[k]<=0)delete U.pets[k];SFX.click();renderUpg()});
+  const own=ownedKeys();
+  $('upGrid').innerHTML=own.length?own.map((k,i)=>petCard(k,'stake',i)).join(''):'<p class="sub">Нет зверей</p>';
+  $('upGrid').querySelectorAll('.pet[data-k]').forEach(el=>el.onclick=()=>{if(U.spinning)return;unhold();const k=el.dataset.k;if((U.pets[k]||0)>=S.pets[k].n)return;U.pets[k]=(U.pets[k]||0)+1;SFX.click();haptic();renderUpg()});
+  $('sortBtn').textContent='Цена '+(U.sortAsc?'↑':'↓');
+  const tgts=ALL_KEYS.slice().sort((a,b)=>U.sortAsc?kVal(a)-kVal(b):kVal(b)-kVal(a));
+  $('tgtGrid').innerHTML=tgts.map((k,i)=>petCard(k,'target',i,(U.target===k?'sel ':'')+(sv&&kVal(k)<=sv?'dim':''))).join('');
+  $('tgtGrid').querySelectorAll('.pet[data-k]').forEach(el=>el.onclick=()=>{if(U.spinning)return;const k=el.dataset.k;
+    if(sv&&kVal(k)<=sv){SFX.err();toast('Цель должна быть дороже ставки');return}
+    unhold();U.target=k;SFX.click();haptic();renderUpg();$('main').scrollTo({top:0,behavior:anim()?'smooth':'auto'})});
+  $('histList').innerHTML=S.hist.length?S.hist.map(h=>`<div class="hist" style="--c:${h.w?'var(--green)':'var(--red)'}">💰 ${fmt(h.s)} ➜ ${PK(h.t).p?emH(h.t):'?'} <span style="color:var(--muted)">${fmtPct(h.ch)}</span><span class="r">${h.w?'Выиграл':'Сгорело'}</span></div>`).join(''):'<p class="sub">Пока пусто</p>';
 }
+$('sortBtn').onclick=()=>{U.sortAsc=!U.sortAsc;SFX.click();renderUpg()};
+$('stakeRange').oninput=e=>{unhold();U.coins=+e.target.value;$('stakeCoinsTxt').textContent=fmt(U.coins);clearTimeout(renderUpg.t);renderUpg.t=setTimeout(renderUpg,120)};
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{if(U.spinning)return;unhold();const q=b.dataset.q;
+  U.coins=q==='+1'?Math.min(S.coins,U.coins+1):Math.floor(S.coins*+q);SFX.click();renderUpg()});
 $('spin').onclick=()=>{
-  const p=P(U.pet);if(!p||U.tier===null||U.spinning)return;
-  const ch=UPG_CHANCE[U.tier-p.r],roll=Math.random()*100,win=roll<ch;
-  U.spinning=true;$('spin').disabled=true;haptic('medium');
-  // забираем ставку сразу
-  const o=S.pets[U.pet];o.n--;if(o.n<=0){delete S.pets[U.pet];if(S.main===U.pet)S.main=Object.keys(S.pets)[0]||null}
-  let prize=null;if(win){prize=randomPetOf(U.tier);addPet(prize.id)}
-  save();
-  const n=$('needle');n.style.transition='none';n.style.transform='rotate(180deg)';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transition='transform 2.4s cubic-bezier(.15,.8,.2,1)';n.style.transform=`rotate(${180+360*4+roll*3.6}deg)`}));
+  cleanStake();const tk=U.target;if(!tk||U.spinning)return;
+  const ch=chanceFor(tk);if(ch<=0)return;
+  const sv=stakeValue(),roll=Math.random()*360;           // угол остановки стрелки, 180° = низ колеса
+  const win=Math.abs(roll-180)<ch*1.8;                     // зона выигрыша: ch% круга вокруг низа
+  U.spinning=true;$('spin').disabled=true;haptic('medium');SFX.whoosh();
+  S.coins-=U.coins;for(const [k,n] of Object.entries(U.pets))removePet(k,n);
+  if(win){addPet(tk);S.st.upgWin++}
+  S.st.upg++;S.hist.unshift({s:sv,t:tk,ch,w:win?1:0});S.hist=S.hist.slice(0,10);
+  save();renderTop();renderTap();
+  const w=$('wheel');w.classList.remove('win','lose');w.classList.add('spinning');
+  const ptr=$('pointer'),D=anim()?4200:700;
+  const base=U.ang-(((U.ang%360)+360)%360),final=base+360*(anim()?6:1)+roll;U.ang=final;
+  ptr.style.transition=`transform ${D}ms cubic-bezier(.08,.6,.12,1)`;ptr.style.transform=`rotate(${final}deg)`;
+  if(anim()){const N=48;for(let i=1;i<N;i++){const p=i/N,t=(1-Math.pow(1-p,1/3.2))*D*.97;setTimeout(()=>{SFX.tick();if(i%4===0)haptic()},t)}}
   setTimeout(()=>{
-    U.spinning=false;haptic(win?'heavy':'light');
-    if(win)modal(`<div class="reveal glow" style="--rc:${rc(prize.r)}">${prize.em}</div><span class="tag" style="--rc:${rc(prize.r)}">${RARITY[prize.r].name}</span><h2>Апгрейд удался!</h2><p class="sub">${p.name} превратился в: ${prize.name}</p><button class="btn wide gold" data-close>Ура!</button>`);
-    else modal(`<div class="reveal" style="filter:grayscale(1)">${p.em}</div><h2>Не повезло</h2><p class="sub">${p.name} сгорел в апгрейдере. Выпало ${roll.toFixed(1)}, нужно было меньше ${ch}.</p><button class="btn wide" data-close>Эх</button>`);
-    if(!S.pets[U.pet]){U.pet=null;U.tier=null}
-    render();
-  },2600);
+    w.classList.remove('spinning');U.spinning=false;U.pets={};U.coins=0;U.hold=true;
+    if(win){w.classList.add('win');
+      setTimeout(()=>showPetWin(tk,'Апгрейд удался! 🎉',`Ставка ${fmt(sv)} превратилась в ${PK(tk).p.name} за ${fmt(kVal(tk))}`,`<button class="btn wide gold" data-close>Забрать</button>`),500);
+      U.target=null;}
+    else{w.classList.add('lose');SFX.lose();haptic('heavy');toast(`Ставка ${fmt(sv)} сгорела 💥`)}
+    setTimeout(render,win?600:900);
+  },D+100);
 };
 
-$('reset').onclick=()=>{
-  modal(`<h2>Сбросить всё?</h2><p class="sub">Монеты, звери и бусты пропадут.</p><button class="btn wide" style="background:#ff3d5a" id="doReset">Да, сбросить</button><div style="height:8px"></div><button class="btn wide" style="background:#ffffff14" data-close>Отмена</button>`);
-  $('doReset').onclick=()=>{S=fresh();save();closeModal();render()};
-};
+// ================= НАСТРОЙКИ =================
+$('gear').onclick=()=>{SFX.click();openSettings()};
+function openSettings(){
+  const sw=(k,l)=>`<div class="set"><span>${l}</span><div class="sw ${S.set[k]?'on':''}" data-k="${k}"></div></div>`;
+  modal(`<h2>⚙️ Настройки</h2>${sw('sound','🔊 Звук')}
+    <div class="set"><span>🎚 Громкость</span><input type="range" id="vol" min="0" max="1" step=".05" value="${S.set.vol}"></div>
+    ${sw('vib','📳 Вибрация')}${sw('anim','✨ Анимации и эффекты')}
+    <div style="height:14px"></div><button class="btn wide ghost" data-close>Готово</button>
+    <div style="height:8px"></div><button class="btn wide" style="background:#ff3d5a33;color:#ff8da0" id="reset">Сбросить прогресс</button>`);
+  document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{const k=s.dataset.k;S.set[k]=!S.set[k];s.classList.toggle('on',S.set[k]);applyAnimClass();save();SFX.click();if(k==='vib')haptic('medium')});
+  $('vol').oninput=e=>{S.set.vol=+e.target.value;save()};$('vol').onchange=()=>SFX.tap();
+  $('reset').onclick=()=>{
+    modal(`<h2>Сбросить всё?</h2><p class="sub">Монеты, звери, бусты и задания пропадут.</p><button class="btn wide" style="background:#ff3d5a" id="doReset">Да, сбросить</button><div style="height:8px"></div><button class="btn wide ghost" data-close>Отмена</button>`);
+    $('doReset').onclick=()=>{const set=S.set;S=fresh();S.set=set;U.pets={};U.coins=0;U.target=null;save();closeModal();render()};
+  };
+}
 
-function render(){renderTop();renderTap();if(cur==='col')renderCol();if(cur==='eggs')renderEggs();if(cur==='upg')renderUpg();if(cur==='boost')renderBoost()}
+function render(){renderTop();renderTap();$('bal').textContent=fmt(S.coins);
+  if(cur==='col')renderCol();if(cur==='eggs')renderEggs();if(cur==='upg')renderUpg();if(cur==='quest')renderQuest();if(cur==='boost')renderBoost()}
 
-// ---------- ИГРОВОЙ ЦИКЛ ----------
-let lastT=performance.now(),saveT=0;
-setInterval(()=>{
+// ================= ИГРОВОЙ ЦИКЛ: доход начисляется ровно раз в секунду =================
+let lastT=performance.now(),acc=0,saveT=0;
+function tick(){
   const now=performance.now(),dt=Math.min((now-lastT)/1000,OFFLINE_CAP_H*3600);lastT=now;
-  S.coins+=perMin()*dt/60;S.energy=Math.min(maxEnergy(),S.energy+regen()*dt);
-  renderTop();saveT+=dt;if(saveT>5){saveT=0;save()}
-},250);
-window.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{lastT=performance.now()}});
+  S.energy=Math.min(maxEnergy(),S.energy+regen()*dt);
+  acc+=dt;
+  if(acc>=1){const secs=Math.floor(acc);acc-=secs;const inc=perSec()*secs;
+    if(inc>0){addCoins(inc);$('bal').textContent=fmt(S.coins);
+      if(!document.hidden&&anim()){bumpCoin();const d=document.createElement('div');d.className='pinc';d.textContent='+'+fmt(inc);$('balance').appendChild(d);setTimeout(()=>d.remove(),1000)}}
+    renderTop();if(cur==='quest')renderQuest();
+    saveT+=secs;if(saveT>=5){saveT=0;save()}}
+  $('etxt').textContent=Math.floor(S.energy)+'/'+maxEnergy();$('efill').style.width=(S.energy/maxEnergy()*100)+'%';
+}
+setInterval(tick,100);
+window.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 window.addEventListener('pagehide',save);
-render();
+document.addEventListener('pointerdown',()=>ac(),{once:true});
+applyAnimClass();render();
 </script>
 </body>
 </html>
