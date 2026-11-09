@@ -1764,7 +1764,9 @@ document.addEventListener('pointerdown', () => ac(), { once: true });
 function fatal(msg) { $('loading').style.display = 'flex'; $('loadMsg').innerHTML = esc(msg) + '<br><br><button class="btn gold" onclick="location.reload()">Обновить</button>' }
 (async function boot() {
   applyAnimClass();
-  if (INIT || DEVU) {
+  const NOSRV = /github\.io$|netlify\.app$|pages\.dev$/.test(location.hostname);
+  let online = (INIT || DEVU) && !NOSRV;
+  if (online) {
     $('loading').style.display = 'flex';
     for (let tries = 0; ; tries++) {
       try {
@@ -1774,13 +1776,15 @@ function fatal(msg) { $('loading').style.display = 'flex'; $('loadMsg').innerHTM
         break;
       } catch (e) {
         if (e.status === 401) { fatal('Не получилось войти. Закрой игру и открой её заново из бота.'); return }
+        if ([404, 405, 501].includes(e.status) || tries >= 3) { online = false; break }
         $('loadMsg').textContent = tries >= 1 ? 'Сервер просыпается — это может занять до минуты…' : 'Загрузка…';
         if (tries > 40) { fatal('Сервер не отвечает. Попробуй чуть позже.'); return }
         await sleep(2500);
       }
     }
     $('loading').style.display = 'none';
-  } else {
+  }
+  if (!online) {
     S = loadLocal(); const off = C.idle(S, Date.now());
     if (off && off.secs >= 60) { S.offBonus = off.earned; setTimeout(() => offlineModal(off.earned), 300) }
     saveLocal();
