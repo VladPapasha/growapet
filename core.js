@@ -4,7 +4,7 @@
   const m = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = m; else root.Core = m;
 })(typeof self !== 'undefined' ? self : this, function () {
-
+ 
   // ---------------- РЕДКОСТИ (inc — доход в секунду) ----------------
   const RARITY = [
     { id: 'common',    name: 'Обычный',     color: '#9aa3b5', inc: 1 },
@@ -13,7 +13,7 @@
     { id: 'legendary', name: 'Легендарный', color: '#ffb020', inc: 120 },
     { id: 'mythic',    name: 'Мифический',  color: '#ff3d81', inc: 600 },
   ];
-
+ 
   // ---------------- ПЕТЫ ----------------
   // em — эмодзи, art — рисунок (рисуется в браузере), img — фото из папки pets/
   // v — себестоимость обычной версии, fam — семейство для тематических яиц
@@ -34,7 +34,7 @@
     { id: 'mutt', name: 'Дворняжка', r: 0, v: 1120, fam: 'dog', art: { t: 'dog', fur: '#b98a5a', muz: '#ead3b2', ear: 'flop', earC: '#8a5f38', tongue: 1 } },
     { id: 'chihuahua', name: 'Чихуахуа', r: 0, v: 1200, fam: 'dog', art: { t: 'dog', fur: '#e9c79c', muz: '#f6e3c8', ear: 'bigpt', bigEye: 1, earIn: '#f2a3a3' } },
     { id: 'dachshund', name: 'Такса', r: 0, v: 1250, fam: 'dog', art: { t: 'dog', fur: '#8a4a24', muz: '#a35e33', ear: 'long', earC: '#6b3618', snout: 'long' } },
-
+ 
     { id: 'penguin', em: '🐧', name: 'Пингвин', r: 1, v: 5600 },
     { id: 'hedgehog', em: '🦔', name: 'Ёжик', r: 1, v: 5700 },
     { id: 'raccoon', em: '🦝', name: 'Енот', r: 1, v: 5800 },
@@ -54,7 +54,7 @@
     { id: 'poodle', name: 'Пудель', r: 1, v: 7100, fam: 'dog', art: { t: 'dog', fur: '#f1e6da', muz: '#f8f1e9', ear: 'puff', earC: '#e8d8c6' } },
     { id: 'spitz', name: 'Шпиц', r: 1, v: 7300, fam: 'dog', art: { t: 'dog', fur: '#f0a14a', muz: '#f8c98a', ear: 'pt', fluff: 1, tongue: 1, blush: 1 } },
     { id: 'm_tongue', img: 'pets/tongue.jpg', name: 'Язычок', r: 1, v: 7600, fam: 'meme' },
-
+ 
     { id: 'owl', em: '🦉', name: 'Сова', r: 2, v: 28000 },
     { id: 'flamingo', em: '🦩', name: 'Фламинго', r: 2, v: 29000 },
     { id: 'wolf', em: '🐺', name: 'Волк', r: 2, v: 30000 },
@@ -75,7 +75,7 @@
     { id: 'shiba', name: 'Сиба-ину', r: 2, v: 37000, fam: 'dog', art: { t: 'dog', fur: '#e0893a', muz: '#fff4e2', ear: 'pt', pat: 'shiba', blush: 1 } },
     { id: 'm_teeth', img: 'pets/teeth.jpg', name: 'Зубастик', r: 2, v: 38000, fam: 'meme' },
     { id: 'm_pugs', img: 'pets/pugs.jpg', name: 'Мопсы-обнимашки', r: 2, v: 39000, fam: 'meme' },
-
+ 
     { id: 'eagle', em: '🦅', name: 'Огненный орёл', r: 3, v: 240000 },
     { id: 'peacock', em: '🦚', name: 'Павлин', r: 3, v: 250000 },
     { id: 'unicorn', em: '🦄', name: 'Единорог', r: 3, v: 260000 },
@@ -88,7 +88,7 @@
     { id: 'trex', em: '🦖', name: 'Ти-рекс', r: 3, v: 320000 },
     { id: 'm_smile', img: 'pets/smile.jpg', name: 'Улыбака', r: 3, v: 340000, fam: 'meme' },
     { id: 'm_shorts', img: 'pets/shorts.jpg', name: 'Чихуа в шортах', r: 3, v: 360000, fam: 'meme' },
-
+ 
     { id: 'spacecat', name: 'Космокот', r: 4, v: 2000000, fam: 'cat', art: { t: 'cat', fur: '#4b2fb8', eye: '#5ff7ff', pat: 'stars', earIn: '#ff7ae0', whisk: '#ffffffaa' } },
     { id: 'golddog', name: 'Золотой пёс', r: 4, v: 2200000, fam: 'dog', art: { t: 'dog', fur: '#ffcf3d', muz: '#fff0b0', ear: 'flop', earC: '#e6a800', pat: 'crown', tongue: 1, sparkle: 1 } },
     { id: 'ghostwhale', em: '🐋', name: 'Кит-призрак', r: 4, v: 2400000 },
@@ -96,7 +96,7 @@
     { id: 'm_prof', img: 'pets/prof.jpg', name: 'Профессор Гриффон', r: 4, v: 2800000, fam: 'meme' },
   ];
   const PET = {}; PETS.forEach(p => PET[p.id] = p);
-
+ 
   // версии: m — множитель цены и дохода, odds — шанс из яйца (%)
   const VARS = [
     { id: '', name: 'Обычный', m: 1, odds: 95, cls: '' },
@@ -122,7 +122,7 @@
   const OFFLINE_CAP_H = 3;
   const AD = { cooldown: 30, perDay: 25 };       // реклама: не чаще раза в 30 сек и 25 раз в день
   const REF = { newbie: 20000, inviter: 50000 };  // награды за приглашение друга
-
+ 
   // ---------------- КАЗИНО ----------------
   // Слот «Pet House»: 5 барабанов × 3 ряда, 10 линий. pay = выплата в ставках на линию за 3/4/5 подряд слева.
   const SLOT = {
@@ -266,7 +266,7 @@
     else return null;
     S.crHist = [c.crash, ...(S.crHist || [])].slice(0, 14); return c;
   }
-
+ 
   // Европейская рулетка: 0–36, один ноль
   const ROUL = {
     order: [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26],
@@ -282,7 +282,24 @@
   const roulMult = k => k[0] === 'n' ? 36 : ROUL.pay[k];
   // Мины 5×5: множитель за k открытых безопасных клеток при n минах, с преимуществом казино 3%
   function minesMult(n, k) { let m = 0.97; for (let i = 0; i < k; i++) m *= (25 - i) / (25 - n - i); return Math.floor(m * 100) / 100; }
-
+  // Plinko: шарик на каждом ряду уходит влево/вправо 50/50. Таблицы с возвратом ~96–97%
+  const _sym = a => [...a, ...a.slice(0, -1).reverse()];
+  const PLINKO = { rows: [8, 12, 16], risks: ['low', 'mid', 'high'], m: {
+    8: { low: _sym([5.4, 2, 1.1, 1, 0.45]), mid: _sym([11, 3, 1.3, 0.7, 0.4]), high: _sym([28, 4, 1.4, 0.3, 0.2]) },
+    12: { low: _sym([10, 3, 1.6, 1.3, 1.1, 1, 0.45]), mid: _sym([32, 11, 4, 2, 1, 0.6, 0.3]), high: _sym([150, 24, 8, 2, 0.65, 0.2, 0.2]) },
+    16: { low: _sym([15, 9, 2, 1.4, 1.3, 1.2, 1.1, 1, 0.4]), mid: _sym([100, 40, 10, 5, 3, 1.5, 0.9, 0.5, 0.3]), high: _sym([1000, 120, 25, 9, 4, 1.9, 0.2, 0.2, 0.2]) } } };
+  // Кости: шанс 2–95%, выплата 97/шанс
+  const DICE = { min: 2, max: 95, edge: 97 };
+  const diceMult = c => Math.floor(DICE.edge / c * 100) / 100;
+  // Монетка: x1.94
+  const COIN = { mult: 1.94 };
+  // Колесо: 20 секторов, возврат ~96%
+  const WHEEL = {
+    low: [1.2, 1.5, 1.2, 0, 1.2, 1.2, 1.5, 1.2, 0, 1.2, 1.2, 1.5, 1.2, 0, 1.2, 1.2, 1.5, 1.2, 0, 0],
+    mid: [0, 1.5, 0, 2, 0, 1.5, 0, 3, 0, 1.5, 0, 2, 0, 1.5, 0, 4.8, 0, 1.5, 0, 0],
+    high: [19.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  };
+ 
   // ---------------- МАГАЗИН ЗА TELEGRAM STARS ----------------
   const PRODUCTS = [
     { id: 'starter', em: '🎁', title: 'Стартовый набор', desc: '300 000 монет + 3 золотых яйца + доход x2 на 24 часа. Можно купить один раз.', stars: 99, once: 1, give: { coins: 300000, tickets: { gold: 3 }, x2h: 24 } },
@@ -293,14 +310,14 @@
     { id: 'meme3', em: '🤪', title: '3 мем-яйца', desc: 'Три мем-яйца — шанс на Профессора Гриффона', stars: 60, give: { tickets: { meme: 3 } } },
     { id: 'cosmic1', em: '🌌', title: 'Космическое яйцо', desc: 'Одно космическое яйцо', stars: 50, give: { tickets: { cosmic: 1 } } },
   ];
-
+ 
   // ---------------- КЛЮЧИ ПЕТОВ ----------------
   // "cat" — обычный, "cat:g" — золотой, "cat:r" — радужный
   const K = (id, v) => v ? id + ':' + v : id;
   const PK = k => { const [id, v = ''] = String(k).split(':'); return { p: PET[id], v: VARS.find(x => x.id === v) || VARS[0] }; };
   const ALL_KEYS = PETS.flatMap(p => VARS.map(v => K(p.id, v.id)));
   const validKey = k => ALL_KEYS.includes(k);
-
+ 
   // ---------------- ФОРМУЛЫ ----------------
   const tapPower = S => 5 * (1 + S.boost.tap);
   const maxEnergy = S => 1000 + 250 * S.boost.energy;
@@ -320,7 +337,7 @@
   const ownedKeys = S => Object.keys(S.pets).sort((a, b) => kVal(b) - kVal(a));
   const speciesCount = S => new Set(Object.keys(S.pets).map(k => k.split(':')[0])).size;
   const famCount = (S, f) => new Set(Object.keys(S.pets).map(k => PK(k).p).filter(p => p.fam === f).map(p => p.id)).size;
-
+ 
   // ---------------- ЗАДАНИЯ ----------------
   const QUESTS = [
     { id: 'tap100', em: '👆', name: 'Сделай 100 тапов', reward: 2000, prog: S => [S.st.taps, 100] },
@@ -349,7 +366,7 @@
     { id: 'inc1000', em: '💰', name: 'Доход 1 000 в секунду', reward: 500000, prog: S => [perSec(S), 1000] },
   ];
   const questReady = (S, q) => { if (S.done[q.id]) return false; const [c, g] = q.prog(S); return c >= g; };
-
+ 
   // ---------------- СОСТОЯНИЕ ----------------
   const DEF_ST = { taps: 0, eggs: 0, upg: 0, upgWin: 0, sold: 0, lvl: 0, gotG: 0, gotR: 0, gotLeg: 0 };
   function fresh(now) {
@@ -369,7 +386,7 @@
   }
   const fail = m => { throw new Error(m); };
   const int = (x, min = 0) => { x = Math.floor(Number(x)); return Number.isFinite(x) && x >= min ? x : fail('Неверное число'); };
-
+ 
   // начислить доход за прошедшее время (целые секунды)
   function idle(S, now) {
     if (!S.last || S.last > now) { S.last = now; return null; }
@@ -389,7 +406,7 @@
   function removePet(S, k, n) { const o = S.pets[k]; o.n -= n; if (o.n <= 0) { delete S.pets[k]; if (S.main === k) S.main = ownedKeys(S)[0] || null; } }
   function rollFrom(odds, rnd) { let x = rnd() * 100; for (let i = 0; i < odds.length; i++) { if (x < odds[i]) return i; x -= odds[i]; } return 0; }
   function randomPet(r, pool, rnd) { let l = PETS.filter(p => p.r === r && (!pool || p.fam === pool)); if (!l.length) l = PETS.filter(p => p.r === r); return l[Math.floor(rnd() * l.length)]; }
-
+ 
   // ---------------- ДЕЙСТВИЯ ----------------
   const A = {
     tap(S, { n }, now) {
@@ -528,13 +545,41 @@
       const mult = minesMult(m.n, m.open.length), win = Math.floor(m.bet * mult); S.coins += win; m.active = 0;
       return { win, mult, pos: m.pos };
     },
+    plinko(S, { bet, rows, risk }, now, rnd) {
+      bet = int(bet, 10); rows = int(rows); if (!PLINKO.rows.includes(rows)) fail('Неверное число рядов');
+      if (!PLINKO.risks.includes(risk)) fail('Неверный риск'); if (bet > S.coins) fail('Не хватает монет');
+      S.coins -= bet; const path = []; for (let i = 0; i < rows; i++) path.push(rnd() < 0.5 ? 0 : 1);
+      const idx = path.reduce((a, b) => a + b, 0), mult = PLINKO.m[rows][risk][idx], win = Math.floor(bet * mult);
+      S.coins += win; S.st.casino = (S.st.casino || 0) + 1;
+      return { path, idx, mult, win, bet };
+    },
+    dice(S, { bet, chance, side }, now, rnd) {
+      bet = int(bet, 10); chance = int(chance); if (chance < DICE.min || chance > DICE.max) fail('Шанс от 2 до 95%');
+      if (side !== 'under' && side !== 'over') fail('Выбери больше или меньше'); if (bet > S.coins) fail('Не хватает монет');
+      S.coins -= bet; const roll = Math.floor(rnd() * 10000) / 100;
+      const ok = side === 'under' ? roll < chance : roll >= 100 - chance, mult = diceMult(chance), win = ok ? Math.floor(bet * mult) : 0;
+      S.coins += win; S.st.casino = (S.st.casino || 0) + 1; S.diceHist = [{ r: roll, w: ok ? 1 : 0 }, ...(S.diceHist || [])].slice(0, 12);
+      return { roll, ok, mult, win, bet };
+    },
+    coin(S, { bet, side }, now, rnd) {
+      bet = int(bet, 10); if (side !== 'h' && side !== 't') fail('Выбери сторону'); if (bet > S.coins) fail('Не хватает монет');
+      S.coins -= bet; const res = rnd() < 0.5 ? 'h' : 't', ok = res === side, win = ok ? Math.floor(bet * COIN.mult) : 0;
+      S.coins += win; S.st.casino = (S.st.casino || 0) + 1; S.coinHist = [res, ...(S.coinHist || [])].slice(0, 14);
+      return { res, ok, win, bet };
+    },
+    wheel(S, { bet, risk }, now, rnd) {
+      bet = int(bet, 10); const segs = WHEEL[risk] || fail('Неверный риск'); if (bet > S.coins) fail('Не хватает монет');
+      S.coins -= bet; const idx = Math.floor(rnd() * segs.length), mult = segs[idx], win = Math.floor(bet * mult);
+      S.coins += win; S.st.casino = (S.st.casino || 0) + 1;
+      return { idx, mult, win, bet };
+    },
   });
-
+ 
   function act(S, a, p, now, rnd) { if (!A[a]) fail('Неизвестное действие'); const r = A[a](S, p || {}, now, rnd); S.coins = Math.floor(S.coins); return r; }
-
+ 
   // ---------------- УДАЧА (выдаёт админ) ----------------
   // S.luck от 0 до 1: если исход плохой, с этой вероятностью он перекручивается (до 2 раз), берётся лучший
-  const LUCKY = ['slot', 'fish', 'roul', 'upg', 'egg', 'crashStart'];
+  const LUCKY = ['slot', 'fish', 'roul', 'upg', 'egg', 'crashStart', 'plinko', 'dice', 'coin', 'wheel'];
   const petsValue = S => Object.entries(S.pets).reduce((a, [k, o]) => a + kVal(k) * o.n, 0);
   const luckScore = (S0, S1, a) => a === 'crashStart' ? (S1.cr ? S1.cr.crash : 0) - 2 : (S1.coins - S0.coins) + petsValue(S1) - petsValue(S0);
   function luckyAct(S, a, p, now, rnd) {
@@ -549,7 +594,7 @@
     for (const k of Object.keys(S)) delete S[k]; Object.assign(S, best.st);
     return best.r;
   }
-
+ 
   // выдать покупку за звёзды
   function grant(S, pid, now) {
     const pr = PRODUCTS.find(x => x.id === pid) || fail('Нет такого товара'); const g = pr.give;
@@ -561,9 +606,10 @@
   }
   function refBonus(S) { S.refs = (S.refs || 0) + 1; S.coins += REF.inviter; S.tickets.basic = (S.tickets.basic || 0) + 1; }
   function upgChance(S, sv, target) { const t = kVal(target); if (!sv || t <= sv) return 0; return Math.min(UPG.max, sv / t * 100 * UPG.edge); }
-
+ 
   return { RARITY, PETS, PET, VARS, EGGS, UPG, BOOSTS, DAILY, OFFLINE_CAP_H, AD, REF, PRODUCTS, QUESTS, ALL_KEYS,
     K, PK, validKey, tapPower, maxEnergy, regen, kVal, kIncFor, kInc, perSec, x2On, lvlCost, lvlSpent, copiesValue, boostCost, adCoins,
     dayKey, ownedKeys, speciesCount, famCount, questReady, fresh, normalize, idle, act, luckyAct, addPet, grant, refBonus, upgChance,
-    SLOT, SYM, slotSpin, slotRound, slotBuyPrice, FISH, isMoney, moneyVal, fishBase, fishFree, fishRound, CRASH, crashPoint, crashMultAt, crashTimeOf, crashSettle, ROUL, roulColor, roulHit, roulMult, minesMult };
+    SLOT, SYM, slotSpin, slotRound, slotBuyPrice, FISH, isMoney, moneyVal, fishBase, fishFree, fishRound, CRASH, crashPoint, crashMultAt, crashTimeOf, crashSettle, ROUL, roulColor, roulHit, roulMult, minesMult, PLINKO, DICE, diceMult, COIN, WHEEL };
 });
+ 
